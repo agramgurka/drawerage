@@ -1,0 +1,72 @@
+from django.contrib.auth.models import User
+from django.db import models
+from .services.basics import GameStage, RoundStage, DrawingColors
+
+
+class Player(models.Model):
+    """ player's account """
+
+    user = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
+    is_host = models.BooleanField('is player a host')
+    nickname = models.CharField('nickname', max_length=100, null=True)
+    avatar = models.ImageField(upload_to='')
+    channel_name = models.CharField('ws channel name', max_length=100, null=True, default=None)
+    drawing_color = models.CharField(
+                                     'drawing color',
+                                     max_length=20,
+                                     choices=[(color, color.value) for color in DrawingColors],
+                                     default=DrawingColors.black
+                                     )
+
+
+class Game(models.Model):
+    """ games """
+
+    code = models.CharField('code', max_length=10)
+    players = models.ManyToManyField(Player, related_name='games')
+    cycles = models.IntegerField('number of cycles', default=2)
+    stage = models.CharField(
+                             'game stage',
+                             max_length=20,
+                             choices=[(stage, stage.value) for stage in GameStage],
+                             default=GameStage.pregame)
+    is_paused = models.BooleanField('is paused', default=False)
+
+
+class Round(models.Model):
+    """ games' rounds """
+
+    game = models.ForeignKey(Game, related_name='game_rounds', on_delete=models.CASCADE)
+    order_number = models.IntegerField('round order number')
+    painter = models.ForeignKey(Player, related_name='painting_rounds', null=True, on_delete=models.SET_NULL)
+    painting_task = models.CharField('painting task', max_length=1000)
+    painting = models.ImageField()
+    stage = models.CharField(
+                             'round stage',
+                             max_length=20,
+                             choices=[(stage, stage.value) for stage in RoundStage],
+                             default=RoundStage.not_started)
+
+    class Meta:
+        ordering = ['game', 'order_number']
+
+
+class Variant(models.Model):
+    """ rounds' variants """
+
+    text = models.CharField('variant text', max_length=100)
+    game_round = models.ForeignKey(Round, related_name='round_variants', on_delete=models.CASCADE)
+    author = models.ForeignKey(Player, related_name='player_variants', null=True, on_delete=models.SET_NULL)
+    selected_by = models.ManyToManyField(Player, related_name='variants')
+
+
+class Result(models.Model):
+    """ games' results """
+
+    game = models.ForeignKey(Game, on_delete=models.CASCADE)
+    player = models.ForeignKey(Player, on_delete=models.CASCADE)
+    result = models.IntegerField('player\'s result', default=0)
+    round_increment = models.IntegerField('round increment', default=0)
+
+    class Meta:
+        ordering = ['game', '-result']

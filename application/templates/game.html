@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Game</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static 'css/game.css' %}">
+</head>
+
+<body>
+<div id="pause_popup" class="invisible">
+        <div id="pause_text">GAME IS PAUSED</div>
+        <button id="resume_game" type="button" class="btn btn-secondary invisible control_btn"> Resume </button>
+</div>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-sm-2" id="game_code"></div>
+    </div>
+     <div id="timer" class="row invisible"></div>
+
+     <div id="status_screen" class="game_screen invisible row justify-content-around"></div>
+
+     <div id="task_screen" class="game_screen invisible row justify-content-center">
+         <div id="drawing_task" class="task_type invisible col-md-6">
+                 <canvas id="drawing_canvas"></canvas>
+                 <div class="text_area"><div id="task"></div></div>
+                 <button type="button" id="submit_painting" class="btn btn btn-secondary" >Send</button>
+         </div>
+         <div id="writing_task" class="task_type invisible col-md-6">
+             <div class="drawing_area"><img src="" id="round_painting"></div>
+             <div class="text_area">
+                 <form>
+                     <input type="text" id="variant">
+                     <button type="button" id="submit_variant">Send</button>
+                 </form>
+             </div>
+         </div>
+         <div id="selecting_task" class="task_type invisible col-sm-6"></div>
+     </div>
+     <div id="results_screen" class="game_screen invisible row"></div>
+
+     <button id="start_game" type="button" class="btn btn-secondary invisible control_btn"> Start </button>
+     <button id="pause_game" type="button" class="btn btn-secondary invisible control_btn"> Pause </button>
+     <button id="cancel_game" type="button" class="btn btn-secondary invisible control_btn"> Cancel </button>
+
+</div>
+<script>
+    const game_id = {{game_id}};
+    const drawing_color = "{{drawing_color}}";
+    const static_url = {% get_static_prefix %};
+</script>
+<script src="{%static 'js/functions.js'%}"></script>
+<script src="{%static 'js/websocket.js'%}"></script>
+<script src="{%static 'js/buttons.js'%}"></script>
+<script src="{%static 'js/drawing.js'%}"></script>
+
+</body>
+</html>
