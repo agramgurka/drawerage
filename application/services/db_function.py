@@ -8,7 +8,6 @@ from django.db.models import F, Count
 from django.http import HttpRequest
 from django.core.files.base import ContentFile
 
-
 from ..models import Player, Game, Round, Variant, Result
 from .basics import (DrawingColors,
                      GameRole, GameStage, RoundStage,
@@ -16,6 +15,7 @@ from .basics import (DrawingColors,
                      POINTS_FOR_RECOGNITION,
                      POINTS_FOR_CORRECT_RECOGNITION,
                      GAME_CODE_LEN, USERNAME_LEN, CODE_CHARS,)
+from .tasks import PredefinedTaskProducer, Restriction
 from .utils import setup_logger
 
 logger = setup_logger(__name__)
@@ -100,10 +100,11 @@ def join_game(request: HttpRequest, game_code: str, nickname: str) -> Optional[i
         return game.pk
 
 
-def create_drawing_task() -> str:
+def create_drawing_task(restrictions) -> tuple[str, Restriction]:
     """ returns new painting task """
 
-    return "some unique painting task"
+    return PredefinedTaskProducer().get_task(restrictions)
+    # return "some unique painting task", []
 
 
 def create_rounds(game_id: int) -> None:
@@ -111,8 +112,9 @@ def create_rounds(game_id: int) -> None:
 
     players = get_players(game_id)
     game = Game.objects.get(pk=game_id)
+    restrictions = None
     for order_number, player in enumerate(players * game.cycles):
-        task = create_drawing_task()
+        task, restrictions = create_drawing_task(restrictions)
         game_round = Round.objects.create(
             game=game,
             order_number=order_number,
