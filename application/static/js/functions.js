@@ -18,8 +18,7 @@ function init_status_screen(players, stage) {
     screen.innerHTML = "";
     for (let i in players) {
         let status_block = document.createElement("div");
-        status_block.classList.add("status_block");
-        status_block.classList.add("col-md-5");
+        status_block.classList.add("status_block", "col-md-5", "text-center", "py-4");
         let player_name = document.createElement("div");
         player_name.innerHTML = i;
         player_name.classList.add("player_name");
@@ -50,7 +49,6 @@ function init_task_screen(task_type, task){
     const screen = document.getElementById("task_screen");
     let drawing_task = document.getElementById("drawing_task");
     let writing_task = document.getElementById("writing_task");
-    let selecting_task = document.getElementById("selecting_task");
     let types = document.querySelectorAll('.task_type');
     types.forEach(type => {
         if (!type.classList.contains("invisible")){
@@ -73,15 +71,19 @@ function init_task_screen(task_type, task){
         variant.value = "";
     }
     if (task_type == "selecting"){
-        selecting_task.innerHTML = ""
+        let selecting_task = document.getElementById("selecting_task");
         selecting_task.classList.remove("invisible");
+        selecting_task.innerHTML = "";
+        const ul = document.createElement("ul");
+        ul.classList.add('list-group');
         for (let option in task) {
-            let option_block = document.createElement("div");
+            let option_block = document.createElement("li");
             option_block.innerHTML = task[option].text;
-            option_block.classList.add("option_block");
+            option_block.classList.add("option_block", "list-group-item");
             option_block.onclick = select_variant;
-            selecting_task.append(option_block);
+            ul.append(option_block);
         }
+        selecting_task.append(ul);
     }
     display_screen(screen);
 };
@@ -91,7 +93,7 @@ function init_results_screen(results){
     screen.innerHTML = "";
     for (let i in results) {
         let result_block = document.createElement("div");
-        result_block.classList.add("result_block");
+        result_block.classList.add("result_block", "shadow-sm", "p-3", "mb-1", "bg-body", "rounded");
         let result_name = document.createElement("div");
         result_name.innerHTML = results[i].player__nickname;
         result_name.classList.add("result_name");
@@ -176,7 +178,7 @@ function submit_painting() {
     canvas = document.getElementById("drawing_canvas");
     painting = canvas.toDataURL("image/png");
     let csrftoken = getCookie('csrftoken');
-    fetch(window.location.origin + "/upload/", {
+    fetch("/upload/", {
         method: "POST",
         credentials: "same-origin",
         headers: { "X-CSRFToken": csrftoken },
