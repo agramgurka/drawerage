@@ -98,6 +98,8 @@ def join_game(request: HttpRequest, game_code: str, nickname: str) -> Optional[i
             player = create_player(user=request.user, nickname=nickname)
             game.players.add(player)
         return game.pk
+    else:
+        raise ValueError('Game has already begun')
 
 
 def create_drawing_task(restrictions) -> tuple[str, Restriction]:

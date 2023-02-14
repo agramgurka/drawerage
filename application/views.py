@@ -37,7 +37,7 @@ class StartPage(FormView):
         try:
             self.game_id = join_game(self.request, game_code=game_code, nickname=nickname)
             return super().form_valid(form)
-        except (ObjectDoesNotExist, MultipleObjectsReturned):
+        except (ObjectDoesNotExist, MultipleObjectsReturned, ValueError):
             return super().form_invalid(form)
 
     def get_success_url(self):
