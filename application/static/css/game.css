@@ -11,6 +11,10 @@
     height: 50px;
 }
 
+.result_name {
+    font-weight: bold;
+}
+
 #drawing_canvas{
     border: 1px solid;
 }
@@ -29,4 +33,12 @@
     width: 100%;
     height: 100%;
     background: white;
+}
+
+@keyframes tilt-shaking {
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(5deg); }
+  50% { transform: rotate(0eg); }
+  75% { transform: rotate(-5deg); }
+  100% { transform: rotate(0deg); }
 }
