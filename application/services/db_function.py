@@ -212,7 +212,7 @@ def selected_variant(game_round: Round, player: Player) -> bool:
 def get_variants(game_round: Round, player: Player) -> list:
     """ returns players' variants for a round """
 
-    return list(Variant.objects.filter(game_round=game_round).exclude(author=player).values('text'))
+    return list(Variant.objects.filter(game_round=game_round).exclude(author=player).order_by('?').values('text'))
 
 
 def get_results(game: Game):
