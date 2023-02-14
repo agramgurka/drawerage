@@ -1,6 +1,6 @@
 function connect() {
     const ws = new WebSocket(
-    'ws://' +
+    window.location.protocol === 'https:' ? 'wss://' : 'ws://' +
     window.location.host +
     '/ws/game/' +
     game_id +
@@ -9,7 +9,7 @@ function connect() {
 }
 
 const ws = new WebSocket(
-    'ws://' +
+    window.location.protocol === 'https:' ? 'wss://' : 'ws://' +
     window.location.host +
     '/ws/game/' +
     game_id +
