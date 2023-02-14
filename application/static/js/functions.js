@@ -33,6 +33,7 @@ function init_status_screen(players, stage) {
              status.src = static_url + "icons/status_ok.png";
         }
         else {
+            status.classList.add('status-' + stage);
             status.src = static_url + "icons/status_" + stage + ".png";
         }
         status.innerHTML = players[i].finished;
