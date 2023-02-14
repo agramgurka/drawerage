@@ -70,3 +70,11 @@ class Result(models.Model):
 
     class Meta:
         ordering = ['game', '-result']
+
+
+class Task(models.Model):
+    language = models.CharField('Language', max_length=16)
+    text = models.TextField()
+    source = models.CharField(max_length=255, blank=True)
+    up_vote = models.IntegerField(default=0)
+    down_vote = models.IntegerField(default=0)
