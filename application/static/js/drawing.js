@@ -35,8 +35,9 @@
 
 				canvas.focus();
 
-				canvas.width  = (window.innerWidth > 400) ? 400 : window.innerWidth;
-				canvas.height = (window.innerHeight > 400) ? 400 : window.innerHeight;
+				const maxSize = 400;
+				canvas.width  = (window.innerWidth > maxSize) ? maxSize : window.innerWidth - 12*2; // margins for col-md-6
+				canvas.height = (window.innerHeight > maxSize) ? maxSize : window.innerHeight;
 
 				// If the browser supports the canvas tag, get the 2d drawing context for this canvas
 				if (canvas.getContext)
