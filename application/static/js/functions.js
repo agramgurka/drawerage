@@ -207,8 +207,9 @@ function select_variant() {
     })
 };
 
-function submit_variant() {
-    variant = document.getElementById("variant").value;
+function submit_variant(e) {
+    e.preventDefault();
+    const variant = document.getElementById("variant").value;
     let csrftoken = getCookie('csrftoken');
     fetch(window.location.origin + "/upload/", {
         method: "POST",

@@ -1,8 +1,7 @@
 const submit_painting_btn = document.getElementById("submit_painting");
 submit_painting_btn.onclick = submit_painting;
 
-const submit_variant_btn = document.getElementById("submit_variant");
-submit_variant_btn.onclick = submit_variant;
+document.getElementById('variantForm').addEventListener('submit', submit_variant);
 
 const start_game_btn = document.getElementById("start_game");
 start_game_btn.onclick = start_game;
