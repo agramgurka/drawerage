@@ -73,9 +73,7 @@ class DrawingColors(StrEnum):
     black = 'black'
 
 
-CODE_CHARS = [
-    *[chr(ord('A') + x) for x in range(26)],
-    *[str(y) for y in range(10)]]
+CODE_CHARS = [chr(ord('A') + x) for x in range(26)]
 GAME_CODE_LEN = 4
 USERNAME_LEN = 10
 POINTS_FOR_CORRECT_ANSWER = 250

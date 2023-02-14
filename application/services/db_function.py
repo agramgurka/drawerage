@@ -92,7 +92,7 @@ def get_game_code(game_id: int) -> str:
 def join_game(request: HttpRequest, game_code: str, nickname: str) -> Optional[int]:
     """ if game exists, adds user to players; returns game id"""
 
-    game = Game.objects.get(code=game_code)
+    game = Game.objects.get(code=game_code.upper())
     if game.stage == GameStage.pregame:
         if not Player.objects.filter(user=request.user, games=game).exists():
             player = create_player(user=request.user, nickname=nickname)
