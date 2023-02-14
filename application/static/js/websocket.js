@@ -1,19 +1,19 @@
 function connect() {
     const ws = new WebSocket(
-    window.location.protocol === 'https:' ? 'wss://' : 'ws://' +
-    window.location.host +
-    '/ws/game/' +
-    game_id +
-    '/'
+      (window.location.protocol === 'https:' ? 'wss://' : 'ws://') +
+      window.location.host +
+      '/ws/game/' +
+      game_id +
+      '/'
     );
 }
 
 const ws = new WebSocket(
-    window.location.protocol === 'https:' ? 'wss://' : 'ws://' +
-    window.location.host +
-    '/ws/game/' +
-    game_id +
-    '/'
+  (window.location.protocol === 'https:' ? 'wss://' : 'ws://') +
+  window.location.host +
+  '/ws/game/' +
+  game_id +
+  '/'
 );
 
 ws.onopen = function () {
