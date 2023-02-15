@@ -4,3 +4,4 @@ daphne == 4.0.0
 Pillow ==  9.4.0
 channels-redis == 4.0.0
 psycopg2 == 2.9.5
+strenum; python_version < '3.11'

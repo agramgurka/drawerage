@@ -1,5 +1,11 @@
-from enum import StrEnum, IntEnum
+from enum import IntEnum
 import asyncio as aio
+import sys
+
+if sys.version_info < (3, 11):
+    from strenum import StrEnum
+else:
+    from enum import StrEnum
 
 
 class Timer:
