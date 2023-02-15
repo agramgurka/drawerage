@@ -209,6 +209,9 @@ function select_variant() {
 
 function submit_variant(e) {
     e.preventDefault();
+    const errorEl = document.querySelector('#variantForm .validationError');
+    errorEl.innerHTML = '';
+
     const variant = document.getElementById("variant").value;
     let csrftoken = getCookie('csrftoken');
     fetch(window.location.origin + "/upload/", {
@@ -221,7 +224,17 @@ function submit_variant(e) {
             "media": variant
         })
     })
-    .then((response) => console.log(response));
+    .then((response) => {
+        if (response.status !== 200) {
+            console.error(response);
+        }
+        return response.json();
+    })
+    .then((data) => {
+        if (data.status === 'duplicate') {
+            errorEl.innerHTML = "You variant is too close to someone's variant or to the correct answer";
+        }
+    });
 }
 
 function upload_media() {

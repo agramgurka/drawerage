@@ -4,6 +4,7 @@ from random import choices
 from typing import Optional
 
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.db.models import F, Count
 from django.http import HttpRequest
 from django.core.files.base import ContentFile
@@ -295,9 +296,19 @@ def apply_variant(game_id: int, user: User, variant: str) -> None:
     game_round = get_current_round(game_id)
     player = Player.objects.get(games=game_id, user=user)
     logger.info(f'{player.nickname} uploads painting')
+    variant = variant.strip()
     if not Variant.objects.filter(game_round=game_round, author=player).exists():
+        if (
+            Variant.objects.filter(game_round=game_round, text__icontains=variant).exists() or
+            (
+                variant.lower() in game_round.painting_task.lower() and
+                0.8 < len(variant) / len(game_round.painting_task) < 1.2
+            )
+        ):
+            # TODO: use stemming to identify similar phrases
+            raise ValidationError('Variant is similar to existing variants')
         Variant.objects.create(
-            text=variant.strip().lower()[:100],
+            text=variant.lower()[:100],
             game_round=game_round,
             author=player
         )

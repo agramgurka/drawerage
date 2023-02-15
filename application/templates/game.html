@@ -32,8 +32,12 @@
              <div class="drawing_area"><img src="" id="round_painting"></div>
              <div class="text_area">
                  <form id="variantForm">
-                     <input type="text" id="variant">
-                     <button type="submit" id="submit_variant">Send</button>
+                     <div class="input-group mb-3">
+                         <input id="variant" type="text" class="form-control" placeholder=""
+                                aria-label="">
+                         <button class="btn btn-primary" type="submit" id="submit_variant">Send</button>
+                     </div>
+                     <div class="validationError"></div>
                  </form>
              </div>
          </div>

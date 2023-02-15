@@ -5,7 +5,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views import View
 from django.views.generic import FormView
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned, ValidationError
 
 from .services.db_function import (join_game, create_game, get_active_game,
                                    upload_avatar, upload_painting,
@@ -67,6 +67,7 @@ class MediaUpload(View):
         game_id = data.get('game_id')
         media = data.get('media')
         status = 'error'
+        status_code = 200
         if media_type == MediaType.painting_task:
             game_stage = get_game_stage(game_id)
             if game_stage == GameStage.pregame:
@@ -76,10 +77,14 @@ class MediaUpload(View):
                 upload_painting(game_id, request.user, media)
                 status = 'success'
         if media_type == MediaType.variant:
-            apply_variant(game_id, request.user, media)
-            status = 'success'
+            try:
+                apply_variant(game_id, request.user, media)
+                status = 'success'
+            except ValidationError:
+                status = 'duplicate'
+                status_code = 400
         if media_type == MediaType.answer:
             select_variant(game_id, request.user, media)
             status = 'success'
-        return JsonResponse({'status': status})
+        return JsonResponse({'status': status}, status=status_code)
 
