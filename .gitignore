@@ -16,3 +16,4 @@ env.bak/
 venv.bak/
 
 */migrations/
+Drawesome/settings_local.py

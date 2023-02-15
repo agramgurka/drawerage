@@ -3,11 +3,9 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-l^v3=7(26hjep!&o+il5puq+11-45nu3yaxl49+zrvlnd&2m4&'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 DEBUG = True
-
-ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'daphne',
@@ -102,3 +100,18 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
+
+
+SITE_DOMAIN = os.getenv('SITE_DOMAIN')
+
+try:
+    from .settings_local import *  # noqa
+except ImportError:
+    pass
+
+
+if not SITE_DOMAIN:
+    raise EnvironmentError('Provide SITE_DOMAIN variable')
+
+ALLOWED_HOSTS = [SITE_DOMAIN]
+CSRF_TRUSTED_ORIGINS = [f'https://{SITE_DOMAIN}', f'http://{SITE_DOMAIN}']
