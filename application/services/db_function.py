@@ -297,7 +297,7 @@ def apply_variant(game_id: int, user: User, variant: str) -> None:
     logger.info(f'{player.nickname} uploads painting')
     if not Variant.objects.filter(game_round=game_round, author=player).exists():
         Variant.objects.create(
-            text=variant,
+            text=variant.strip().lower()[:100],
             game_round=game_round,
             author=player
         )

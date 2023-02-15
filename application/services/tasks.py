@@ -1,7 +1,5 @@
 from typing import Any
 
-from django.db.models import Q
-
 from ..models import Task
 
 
@@ -12,11 +10,6 @@ class Restriction:
 class IdRestriction(Restriction):
     def __init__(self, *, ids):
         self.values = ids
-
-    def __add__(self, other):
-        if not isinstance(other, self.__class__):
-            raise NotImplementedError('Cannot merge different restrictions')
-        return self.__class__(ids=list(set(self.values) + set(other.values)))
 
 
 class TextRestriction(Restriction):
@@ -46,4 +39,4 @@ class PredefinedTaskProducer(BaseTaskProducer):
             qs = qs.exclude(id__in=items)
 
         task = qs.order_by('?').first()
-        return task.text, other_restrictions + [IdRestriction(ids=list(set(items) | {task.id}))]
+        return task.text.lower().strip(), other_restrictions + [IdRestriction(ids=list(set(items) | {task.id}))]
