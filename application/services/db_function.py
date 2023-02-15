@@ -212,10 +212,12 @@ def selected_variant(game_round: Round, player: Player) -> bool:
     ).exists() or game_round.painter == player
 
 
-def get_variants(game_round: Round, player: Player) -> list:
+def get_variants(game_round: Round) -> list[tuple[str, int]]:
     """ returns players' variants for a round """
 
-    return list(Variant.objects.filter(game_round=game_round).exclude(author=player).order_by('?').values('text'))
+    return list(Variant.objects.filter(
+        game_round=game_round,
+    ).order_by('id').values_list('text', 'author_id'))
 
 
 def get_results(game: Game):

@@ -79,7 +79,7 @@ function init_task_screen(task_type, task){
         ul.classList.add('list-group');
         for (let option in task) {
             let option_block = document.createElement("li");
-            option_block.innerHTML = task[option].text;
+            option_block.innerHTML = task[option];
             option_block.classList.add("option_block", "list-group-item");
             option_block.onclick = select_variant;
             ul.append(option_block);
