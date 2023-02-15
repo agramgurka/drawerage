@@ -1,4 +1,5 @@
 import asyncio as aio
+from random import shuffle
 from typing import Optional
 
 from channels.db import database_sync_to_async as to_async
@@ -208,6 +209,8 @@ class Game(AsyncJsonWebsocketConsumer):
                     'avatar': avatar_url
                 }
 
+            current_round = None
+            all_variants = None
             while True:
                 if not self.paused:
                     players = await to_async(get_players)(self.game_id, host=True)
@@ -304,6 +307,20 @@ class Game(AsyncJsonWebsocketConsumer):
                         elif game_round.stage == RoundStage.selecting:
                             status_updates['task_type'] = TaskType.selecting
                             task_updates['task_type'] = TaskType.selecting
+
+                            if all_variants is None or current_round != game_round:
+                                current_round = game_round
+                                variants = await to_async(get_variants)(game_round)
+
+                                all_variants = {}
+                                for player in players:
+                                    player_variants = [
+                                        variant for variant, user_id in variants
+                                        if user_id != player.pk
+                                    ]
+                                    shuffle(player_variants)
+                                    all_variants[player.pk] = player_variants
+
                             for player in players:
                                 if not player.is_host:
                                     status_updates['players'][player.nickname]['finished'] = \
@@ -318,7 +335,7 @@ class Game(AsyncJsonWebsocketConsumer):
                                         }
                                     )
                                 else:
-                                    task_updates['task'] = await to_async(get_variants)(game_round, player)
+                                    task_updates['task'] = all_variants[player.pk]
                                     await self.channel_layer.send(
                                         player.channel_name,
                                         {
