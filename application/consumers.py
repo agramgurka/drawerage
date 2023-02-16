@@ -172,11 +172,11 @@ class Game(AsyncJsonWebsocketConsumer):
         timer = Timer(stage_time)
         while not timer.exceed:
             if not self.paused:
-                if await to_async(stage_completed)(self.game_id, game_stage, round_stage):
-                    timer.time = 0
-                    logger.info('stage is completed before time exceeds')
                 await self.broadcast_timer_update(timer.time)
                 await timer.tick()
+                if await to_async(stage_completed)(self.game_id, game_stage, round_stage):
+                    timer.time = -1
+                    logger.info('stage is completed before time exceeds')
             else:
                 await aio.sleep(1)
         if game_stage == GameStage.preround or round_stage == RoundStage.writing:

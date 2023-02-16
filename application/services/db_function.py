@@ -271,23 +271,29 @@ def upload_avatar(game_id: int, user: User, media: str) -> None:
     """ uploads player's avatar """
 
     player = Player.objects.get(games=game_id, user=user)
-    media = media.replace('data:image/png;base64,', '')
-    avatar = ContentFile(base64.b64decode(media), f'{game_id}_{player.nickname}.png')
-    player.avatar = avatar
-    player.save()
-    logger.info(f'{player.nickname} uploaded avatar')
+    if not player.avatar:
+        media = media.replace('data:image/png;base64,', '')
+        avatar = ContentFile(base64.b64decode(media), f'{game_id}_{player.nickname}.png')
+        player.avatar = avatar
+        player.save()
+        logger.info(f'{player.nickname} uploaded avatar')
+    else:
+        raise ValidationError(f'{player.nickname} has already uploaded avatar')
 
 
 def upload_painting(game_id: int, user: User, media) -> None:
     """ uploads player's painting """
 
     player = Player.objects.get(games=game_id, user=user)
-    media = media.replace('data:image/png;base64,', '')
     game_round = Round.objects.filter(game=game_id, painter=player, stage=RoundStage.not_started).first()
-    painting = ContentFile(base64.b64decode(media), f'{game_id}_round_{game_round.order_number}_{player.nickname}.png')
-    game_round.painting = painting
-    game_round.save()
-    logger.info(f'{player.nickname} uploaded painting for {game_round.order_number} round')
+    if not game_round.painting:
+        media = media.replace('data:image/png;base64,', '')
+        painting = ContentFile(base64.b64decode(media), f'{game_id}_round_{game_round.order_number}_{player.nickname}.png')
+        game_round.painting = painting
+        game_round.save()
+        logger.info(f'{player.nickname} uploaded painting for {game_round.order_number} round')
+    else:
+        raise ValidationError(f'{player.nickname} has already uploaded painting for {game_round.order_number} round')
 
 
 def apply_variant(game_id: int, user: User, variant: str) -> None:
@@ -320,9 +326,12 @@ def select_variant(game_id: int, user: User, answer) -> None:
 
     game_round = get_current_round(game_id)
     player = Player.objects.get(games=game_id, user=user)
-    variant = Variant.objects.get(game_round=game_round, text=answer)
-    variant.selected_by.add(player)
-    logger.info(f'{player.nickname} selected variant {variant.text}')
+    if not Variant.objects.filter(game_round=game_round, selected_by=player).exists():
+        variant = Variant.objects.get(game_round=game_round, text=answer)
+        variant.selected_by.add(player)
+        logger.info(f'{player.nickname} selected variant {variant.text}')
+    else:
+        raise ValidationError(f'{player.nickname} has already selected variant')
 
 
 def calculate_results(game_id: int) -> None:
