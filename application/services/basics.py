@@ -57,9 +57,9 @@ class GameRole(StrEnum):
 
 
 class StageTime(IntEnum):
-    preround = 30
-    writing = 20
-    selecting = 10
+    preround = 120
+    writing = 40
+    selecting = 30
     results = 10
 
 

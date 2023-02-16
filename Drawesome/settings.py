@@ -101,6 +101,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
+GAME_SPEED = 1.0
+
 
 SITE_DOMAIN = os.getenv('SITE_DOMAIN')
 
