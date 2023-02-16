@@ -71,11 +71,19 @@ class MediaUpload(View):
         if media_type == MediaType.painting_task:
             game_stage = get_game_stage(game_id)
             if game_stage == GameStage.pregame:
-                upload_avatar(game_id, request.user, media)
-                status = 'success'
+                try:
+                    upload_avatar(game_id, request.user, media)
+                    status = 'success'
+                except ValidationError:
+                    status = 'duplicate'
+                    status_code = 400
             if game_stage == GameStage.preround:
-                upload_painting(game_id, request.user, media)
-                status = 'success'
+                try:
+                    upload_painting(game_id, request.user, media)
+                    status = 'success'
+                except ValidationError:
+                    status = 'duplicate'
+                    status_code = 400
         if media_type == MediaType.variant:
             try:
                 apply_variant(game_id, request.user, media)
@@ -84,7 +92,11 @@ class MediaUpload(View):
                 status = 'duplicate'
                 status_code = 400
         if media_type == MediaType.answer:
-            select_variant(game_id, request.user, media)
-            status = 'success'
+            try:
+                select_variant(game_id, request.user, media)
+                status = 'success'
+            except ValidationError:
+                status = 'duplicate'
+                status_code = 400
         return JsonResponse({'status': status}, status=status_code)
 
