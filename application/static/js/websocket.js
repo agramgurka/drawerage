@@ -1,5 +1,5 @@
 function connect() {
-    const ws = new WebSocket(
+    return new WebSocket(
       (window.location.protocol === 'https:' ? 'wss://' : 'ws://') +
       window.location.host +
       '/ws/game/' +
@@ -8,13 +8,7 @@ function connect() {
     );
 }
 
-const ws = new WebSocket(
-  (window.location.protocol === 'https:' ? 'wss://' : 'ws://') +
-  window.location.host +
-  '/ws/game/' +
-  game_id +
-  '/'
-);
+const ws = connect();
 
 ws.onopen = function () {
     ws.send(
