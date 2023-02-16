@@ -4,6 +4,7 @@ from typing import Optional
 
 from channels.db import database_sync_to_async as to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
+from django.conf import settings
 
 from .services.basics import (Timer, GameStage, GameRole, GameScreens,
                               RoundStage, TaskType, StageTime, MEDIA_UPLOAD_DELAY)
@@ -170,7 +171,7 @@ class Game(AsyncJsonWebsocketConsumer):
         else:
             raise ValueError('incorrect stage for processing')
 
-        timer = Timer(stage_time)
+        timer = Timer(int(stage_time / settings.GAME_SPEED))
         while not timer.exceed:
             if not self.paused:
                 await self.broadcast_timer_update(timer.time)
