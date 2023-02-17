@@ -187,6 +187,30 @@ def finished_painting(game: Game, player: Player) -> bool:
     ).exists()
 
 
+def get_finished_players(game_id: int, game_stage: GameStage, game_round: Round = None) -> list:
+    finished_players = None
+    if game_stage == GameStage.preround:
+        finished_players = Round.objects.filter(
+            game=game_id,
+            stage=RoundStage.not_started
+        ).exclude(
+            painting__exact=''
+        ).values_list('painter__pk', flat=True)
+    else:
+        if game_round.stage == RoundStage.writing:
+            finished_players = Variant.objects.filter(game_round=game_round).values_list('author__pk', flat=True)
+        if game_round.stage == RoundStage.selecting:
+            finished_players = Variant.objects.filter(
+                game_round=game_round
+            ).exclude(selected_by=None).values_list('selected_by__pk', flat=True)
+
+    finished_players = [*finished_players]
+    if game_round and game_round.stage == RoundStage.selecting:
+        finished_players.append(game_round.painter.pk)
+    logger.debug(finished_players)
+    return finished_players
+
+
 def get_drawing_task(game_id: int, player: Player) -> str:
     """ returns player's painting task for a cycle """
 
@@ -411,3 +435,23 @@ def finish_game(game_id: int) -> None:
 
     Game.objects.filter(pk=game_id).update(stage=GameStage.finished)
 
+
+def get_players_selects(game_round: Round):
+    selects = {
+        'incorrect': [],
+        'correct': None
+    }
+    variants = Variant.objects.filter(
+        game_round=game_round
+        ).select_related('selected_by__nickname').values('text', 'author', 'selected_by__nickname')
+    for variant in variants:
+        if variant['author'] == game_round.painter.id:
+            selects['correct'] = {
+                'text': variant['text'],
+                'selected_by': variant['selected_by__nickname']
+            }
+        else:
+            selects['incorrect'].append({
+                'text': variant['text'],
+                'selected_by': variant['selected_by__nickname']
+            })
