@@ -7,15 +7,14 @@ from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from django.conf import settings
 
 from .services.basics import (Timer, GameStage, GameRole, GameScreens,
-                              RoundStage, TaskType, StageTime, MEDIA_UPLOAD_DELAY)
+                              RoundStage, TaskType, StageTime, MEDIA_UPLOAD_DELAY, GAME_UPDATE_DELAY)
 from .services.utils import setup_logger, display_task_result
 from .services.db_function import (
     get_current_round, get_drawing_task, get_game_stage, finish_game,
-    next_stage, get_players, get_role, finished_painting,
-    applied_variant, selected_variant, get_variants, get_game_code,
+    next_stage, get_players, get_role, get_variants, get_game_code,
     get_results, register_channel, create_rounds, calculate_results, stage_completed,
-    create_results, is_game_paused, switch_pause_state)
-
+    create_results, is_game_paused, switch_pause_state, get_players_selects,
+    get_finished_players)
 
 logger = setup_logger(__name__)
 
@@ -203,34 +202,42 @@ class Game(AsyncJsonWebsocketConsumer):
                 'active_screen': GameScreens.results,
             }
 
+            current_game_stage = None
+            current_round_stage = None
+            drawing_tasks = {}
+            variants = {}
+            selects = {}
+            results = []
+
             players = await to_async(get_players)(self.game_id)
             for player in players:
-                avatar_url = None if not player.avatar else player.avatar.url
                 status_updates['players'][player.nickname] = {
-                    'avatar': avatar_url
+                    'avatar': None if not player.avatar else player.avatar.url
                 }
 
-            current_round = None
-            all_variants = None
             while True:
                 if not self.paused:
-                    players = await to_async(get_players)(self.game_id, host=True)
                     game_stage = await to_async(get_game_stage)(self.game_id)
+                    players = await to_async(get_players)(self.game_id, host=True)
+                    if current_game_stage != game_stage:
+                        current_game_stage = game_stage
+                        drawing_tasks = {}
 
                     if game_stage == GameStage.finished:
                         break
-                    elif game_stage == GameStage.pregame:
-                        for player in players:
-                            if not player.is_host:
-                                avatar_url = None if not player.avatar else player.avatar.url
-                                status_updates['players'][player.nickname] = {
-                                    'avatar': avatar_url,
-                                    'finished': bool(player.avatar)
-                                }
 
+                    elif game_stage == GameStage.pregame:
                         status_updates['task_type'] = TaskType.drawing
                         task_updates['task_type'] = TaskType.drawing
                         task_updates['task'] = 'draw yourself'
+
+                        for player in players:
+                            if not player.is_host:
+                                status_updates['players'][player.nickname] = {
+                                    'avatar': None if not player.avatar else player.avatar.url,
+                                    'finished': bool(player.avatar)
+                                }
+
                         for player in players:
                             if player.avatar or player.is_host:
                                 await self.channel_layer.send(
@@ -252,10 +259,15 @@ class Game(AsyncJsonWebsocketConsumer):
                     elif game_stage == GameStage.preround:
                         status_updates['task_type'] = TaskType.drawing
                         task_updates['task_type'] = TaskType.drawing
+                        if not drawing_tasks:
+                            for player in players:
+                                if not player.is_host:
+                                    drawing_tasks[player.pk] = await to_async(get_drawing_task)(self.game_id, player)
+                        finished_players = await to_async(get_finished_players)(self.game_id, game_stage)
                         for player in players:
                             if not player.is_host:
                                 status_updates['players'][player.nickname]['finished'] = \
-                                    await to_async(finished_painting)(self.game_id, player)
+                                    player.pk in finished_players
                         for player in players:
                             if player.is_host or status_updates['players'][player.nickname]['finished']:
                                 await self.channel_layer.send(
@@ -266,7 +278,7 @@ class Game(AsyncJsonWebsocketConsumer):
                                     }
                                 )
                             else:
-                                task_updates['task'] = await to_async(get_drawing_task)(self.game_id, player)
+                                task_updates['task'] = drawing_tasks[player.pk]
                                 await self.channel_layer.send(
                                     player.channel_name,
                                     {
@@ -277,16 +289,23 @@ class Game(AsyncJsonWebsocketConsumer):
 
                     elif game_stage == GameStage.round:
                         game_round = await to_async(get_current_round)(self.game_id)
+                        if current_round_stage != game_round.stage:
+                            current_round_stage = game_round.stage
+                            variants = {}
+                            selects = {}
+                            results = []
+
                         if game_round.stage == RoundStage.writing:
                             status_updates['task_type'] = TaskType.writing
                             task_updates['task_type'] = TaskType.writing
-                            if not game_round.painting:
-                                continue
                             task_updates['task'] = game_round.painting.url
+                            finished_players = await to_async(get_finished_players)(self.game_id, game_stage,
+                                                                                    game_round)
+
                             for player in players:
                                 if not player.is_host:
                                     status_updates['players'][player.nickname]['finished'] = \
-                                        await to_async(applied_variant)(game_round, player)
+                                        player.pk in finished_players
                             for player in players:
                                 if player.is_host or status_updates['players'][player.nickname]['finished']:
                                     await self.channel_layer.send(
@@ -308,24 +327,23 @@ class Game(AsyncJsonWebsocketConsumer):
                         elif game_round.stage == RoundStage.selecting:
                             status_updates['task_type'] = TaskType.selecting
                             task_updates['task_type'] = TaskType.selecting
-
-                            if all_variants is None or current_round != game_round:
-                                current_round = game_round
-                                variants = await to_async(get_variants)(game_round)
-
-                                all_variants = {}
+                            finished_players = await to_async(get_finished_players)(self.game_id, game_stage,
+                                                                                    game_round)
+                            if not variants:
+                                all_variants = await to_async(get_variants)(game_round)
                                 for player in players:
                                     player_variants = [
-                                        variant for variant, user_id in variants
+                                        variant for variant, user_id in all_variants
                                         if user_id != player.pk
                                     ]
                                     shuffle(player_variants)
-                                    all_variants[player.pk] = player_variants
+                                    variants[player.pk] = player_variants
 
                             for player in players:
                                 if not player.is_host:
                                     status_updates['players'][player.nickname]['finished'] = \
-                                        await to_async(selected_variant)(game_round, player)
+                                        player.pk in finished_players
+
                             for player in players:
                                 if player.is_host or status_updates['players'][player.nickname]['finished']:
                                     await self.channel_layer.send(
@@ -336,7 +354,7 @@ class Game(AsyncJsonWebsocketConsumer):
                                         }
                                     )
                                 else:
-                                    task_updates['task'] = all_variants[player.pk]
+                                    task_updates['task'] = variants[player.pk]
                                     await self.channel_layer.send(
                                         player.channel_name,
                                         {
@@ -346,17 +364,19 @@ class Game(AsyncJsonWebsocketConsumer):
                                     )
 
                         elif game_round.stage == RoundStage.results:
-                            result_updates['results'] = await to_async(get_results)(self.game_id)
-                            for player in players:
-                                await self.channel_layer.send(
-                                    player.channel_name,
-                                    {
-                                            'type': 'send.update',
-                                            **result_updates
-                                        }
-                                    )
-
-                await aio.sleep(0.2)
+                            if not results:
+                                results = await to_async(get_results)(self.game_id)
+                                selects = await to_async(get_players_selects)(game_round)
+                            result_updates['selects'] = selects
+                            result_updates['results'] = results
+                            await self.channel_layer.group_send(
+                                self.global_group,
+                                {
+                                    'type': 'send.update',
+                                    **result_updates
+                                }
+                            )
+                await aio.sleep(GAME_UPDATE_DELAY)
             logger.info('updates broadcast is finished')
         except aio.exceptions.CancelledError:
             pass
