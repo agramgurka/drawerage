@@ -5,6 +5,7 @@ from typing import Optional
 from channels.db import database_sync_to_async as to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 
 from .services.basics import (Timer, GameStage, GameRole, GameScreens,
                               RoundStage, TaskType, StageTime, MEDIA_UPLOAD_DELAY, GAME_UPDATE_DELAY)
@@ -13,7 +14,7 @@ from .services.db_function import (
     get_current_round, get_drawing_task, get_game_stage, finish_game,
     next_stage, get_players, get_role, get_variants, get_game_code,
     get_results, register_channel, create_rounds, calculate_results, stage_completed,
-    create_results, is_game_paused, switch_pause_state, get_players_selects,
+    create_results, is_game_paused, switch_pause_state, get_players_answers,
     get_finished_players)
 
 logger = setup_logger(__name__)
@@ -147,6 +148,10 @@ class Game(AsyncJsonWebsocketConsumer):
                         if game_round.stage == RoundStage.selecting:
                             logger.info('start selecting')
                             await self.process_stage(GameStage.round, RoundStage.selecting)
+                        if game_round.stage == RoundStage.answers:
+                            logger.info('show answers')
+                            await aio.sleep(1)
+                            await self.manage_answers_display(game_round)
                             await to_async(calculate_results)(self.game_id)
                         if game_round.stage == RoundStage.results:
                             logger.info('show result')
@@ -201,12 +206,15 @@ class Game(AsyncJsonWebsocketConsumer):
             result_updates = {
                 'active_screen': GameScreens.results,
             }
+            answers_updates = {
+                'active_screen': GameScreens.answers
+            }
 
             current_game_stage = None
             current_round_stage = None
             drawing_tasks = {}
             variants = {}
-            selects = {}
+            answers = {}
             results = []
 
             players = await to_async(get_players)(self.game_id)
@@ -288,17 +296,20 @@ class Game(AsyncJsonWebsocketConsumer):
                                 )
 
                     elif game_stage == GameStage.round:
-                        game_round = await to_async(get_current_round)(self.game_id)
+                        try:
+                            game_round = await to_async(get_current_round)(self.game_id)
+                        except ObjectDoesNotExist:
+                            continue
                         if current_round_stage != game_round.stage:
                             current_round_stage = game_round.stage
                             variants = {}
-                            selects = {}
+                            answers = {}
                             results = []
 
                         if game_round.stage == RoundStage.writing:
                             status_updates['task_type'] = TaskType.writing
                             task_updates['task_type'] = TaskType.writing
-                            task_updates['task'] = game_round.painting.url
+                            task_updates['task'] = game_round.painting.url if game_round.painting else None
                             finished_players = await to_async(get_finished_players)(self.game_id, game_stage,
                                                                                     game_round)
 
@@ -363,11 +374,22 @@ class Game(AsyncJsonWebsocketConsumer):
                                         }
                                     )
 
+                        elif game_round.stage == RoundStage.answers:
+                            if not answers:
+                                answers = await to_async(get_variants)(game_round)
+                                answers = [variant for variant, _ in answers]
+                                shuffle(answers)
+                            answers_updates['variants'] = answers
+                            await self.channel_layer.group_send(
+                                self.global_group,
+                                {
+                                    'type': 'send.update',
+                                    **answers_updates
+                                }
+                            )
                         elif game_round.stage == RoundStage.results:
                             if not results:
                                 results = await to_async(get_results)(self.game_id)
-                                selects = await to_async(get_players_selects)(game_round)
-                            result_updates['selects'] = selects
                             result_updates['results'] = results
                             await self.channel_layer.group_send(
                                 self.global_group,
@@ -435,5 +457,31 @@ class Game(AsyncJsonWebsocketConsumer):
         if self.game_task:
             self.game_task.cancel()
 
+    async def manage_answers_display(self, game_round):
+        answers = await to_async(get_players_answers)(game_round)
+        is_correct = False
+        while answers:
+            if not self.paused:
+                if answers['incorrect']:
+                    variant = answers['incorrect'].pop()
+                else:
+                    answers.pop('incorrect')
+                    variant = answers.pop('correct')
+                    is_correct = True
+                await self.channel_layer.group_send(
+                    self.global_group,
+                    {
+                        'type': 'display.answer',
+                        'variant': variant,
+                        'is_correct': is_correct
+                    }
+                )
 
+                await aio.sleep(StageTime.for_one_select.value + len(variant['selected_by']))
 
+    async def display_answer(self, event):
+        await self.send_json({
+            'command': 'display_answer',
+            'variant': event['variant'],
+            'is_correct': event['is_correct']
+        })

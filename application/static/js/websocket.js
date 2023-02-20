@@ -23,14 +23,25 @@ ws.onmessage = function(response) {
     if (command == "update") {
         const active_screen = res.active_screen;
         if (active_screen == "status") {
-            init_status_screen(res.players, res.task_type);
+            let screen = init_status_screen(res.players, res.task_type)
+            display_screen(screen);
         }
         if (active_screen == "task") {
-            init_task_screen(res.task_type, res.task);
+            let screen = init_task_screen(res.task_type, res.task);
+            display_screen(screen);
         }
         if (active_screen == "results") {
-            init_results_screen(res.results);
+            let screen = init_results_screen(res.results);
+            display_screen(screen);
         }
+        if (active_screen == "answers") {
+            let screen = init_answers_screen(res.variants);
+            display_screen(screen);
+        }
+
+    }
+    if (command == "display_answer") {
+        display_answer(res.variant, res.is_correct);
     }
     if (command == "pause") {
         display_pause_popup(res.text);

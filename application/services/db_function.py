@@ -5,7 +5,7 @@ from typing import Optional
 
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from django.db.models import F, Count
+from django.db.models import F, Count, Q
 from django.http import HttpRequest
 from django.core.files.base import ContentFile
 
@@ -175,18 +175,6 @@ def get_role(user: User, game_id: int) -> Optional[GameRole]:
         return None
 
 
-def finished_painting(game: Game, player: Player) -> bool:
-    """ returns True if player has finished painting task """
-
-    return Round.objects.filter(
-        game=game,
-        painter=player,
-        stage=RoundStage.not_started,
-    ).exclude(
-        painting__exact=''
-    ).exists()
-
-
 def get_finished_players(game_id: int, game_stage: GameStage, game_round: Round = None) -> list:
     finished_players = None
     if game_stage == GameStage.preround:
@@ -207,7 +195,6 @@ def get_finished_players(game_id: int, game_stage: GameStage, game_round: Round 
     finished_players = [*finished_players]
     if game_round and game_round.stage == RoundStage.selecting:
         finished_players.append(game_round.painter.pk)
-    logger.debug(finished_players)
     return finished_players
 
 
@@ -219,21 +206,6 @@ def get_drawing_task(game_id: int, player: Player) -> str:
         painter=player,
         stage=RoundStage.not_started
     ).first().painting_task
-
-
-def applied_variant(game_round: Round, player: Player) -> bool:
-    """ returns True if player has applied variant for round's painting task """
-
-    return Variant.objects.filter(game_round=game_round, author=player).exists()
-
-
-def selected_variant(game_round: Round, player: Player) -> bool:
-    """ returns True if player has selected variant """
-
-    return Variant.objects.filter(
-        game_round=game_round,
-        selected_by=player
-    ).exists() or game_round.painter == player
 
 
 def get_variants(game_round: Round) -> list[tuple[str, int]]:
@@ -253,12 +225,15 @@ def get_results(game: Game):
 def next_stage(game_id: int):
     """ switch game stage """
 
-    stage = Game.objects.get(pk=game_id).stage
-    if stage == GameStage.pregame:
-        Game.objects.filter(pk=game_id).update(stage=GameStage.preround)
-
-    elif stage == GameStage.preround:
-        Game.objects.filter(pk=game_id).update(stage=GameStage.round)
+    logger.debug('next stage function')
+    game = Game.objects.get(pk=game_id)
+    logger.debug(f'game stage before: {game.stage}')
+    if game.stage == GameStage.pregame:
+        game.stage = GameStage.preround
+        game.save()
+    elif game.stage == GameStage.preround:
+        game.stage = GameStage.round
+        game.save()
         next_round = Round.objects.filter(
             game=game_id,
             stage=RoundStage.not_started
@@ -266,31 +241,35 @@ def next_stage(game_id: int):
         next_round.stage = RoundStage.writing
         next_round.save()
 
-    elif stage == GameStage.round:
-        if Round.objects.filter(stage=RoundStage.writing).exists():
-            Round.objects.filter(stage=RoundStage.writing).update(stage=RoundStage.selecting)
-
-        elif Round.objects.filter(stage=RoundStage.selecting).exists():
-            Round.objects.filter(stage=RoundStage.selecting).update(stage=RoundStage.results)
-
-        elif Round.objects.filter(stage=RoundStage.results).exists():
-            Round.objects.filter(stage=RoundStage.results).update(stage=RoundStage.finished)
+    elif game.stage == GameStage.round:
+        game_round = get_current_round(game_id)
+        logger.debug(f'round stage before: {game_round.stage}')
+        if game_round.stage == RoundStage.writing:
+            game_round.stage = RoundStage.selecting
+            game_round.save()
+        elif game_round.stage == RoundStage.selecting:
+            game_round.stage = RoundStage.answers
+            game_round.save()
+        elif game_round.stage == RoundStage.answers:
+            game_round.stage = RoundStage.results
+            game_round.save()
+        elif game_round.stage == RoundStage.results:
+            game_round.stage = RoundStage.finished
+            game_round.save()
             next_round_number = Round.objects.filter(game=game_id, stage=RoundStage.finished).count()
-            players_cnt = Player.objects.filter(games=game_id, is_host=False).count()
+            players_cnt = len(get_players(game_id, host=False))
             if next_round_number % players_cnt:
-                next_round = Round.objects.filter(
-                    game=game_id,
-                    stage=RoundStage.not_started
-                ).first()
+                next_round = Round.objects.filter(game=game_id, stage=RoundStage.not_started).first()
                 next_round.stage = RoundStage.writing
                 next_round.save()
-
             else:
-                cycles = Game.objects.get(pk=game_id).cycles
-                if next_round_number >= players_cnt * cycles:
-                    Game.objects.filter(pk=game_id).update(stage=GameStage.finished)
+                if next_round_number >= players_cnt * game.cycles:
+                    game.stage = GameStage.finished
                 else:
-                    Game.objects.filter(pk=game_id).update(stage=GameStage.preround)
+                    game.stage = GameStage.preround
+                game.save()
+        logger.debug(f'round stage after: {game_round.stage}')
+    logger.debug(f'game stage after: {game.stage}')
 
 
 def upload_avatar(game_id: int, user: User, media: str) -> None:
@@ -344,7 +323,9 @@ def apply_variant(game_id: int, user: User, variant: str) -> None:
             game_round=game_round,
             author=player
         )
-    logger.info(f'{player.nickname} applied variant for {game_round.order_number} round')
+        logger.info(f'{player.nickname} applied variant for {game_round.order_number} round')
+    else:
+        logger.info(f'{player.nickname} has already applied variant for {game_round.order_number} round')
 
 
 def select_variant(game_id: int, user: User, answer) -> None:
@@ -436,22 +417,23 @@ def finish_game(game_id: int) -> None:
     Game.objects.filter(pk=game_id).update(stage=GameStage.finished)
 
 
-def get_players_selects(game_round: Round):
-    selects = {
+def get_players_answers(game_round: Round):
+    answers = {
         'incorrect': [],
         'correct': None
     }
     variants = Variant.objects.filter(
-        game_round=game_round
-        ).select_related('selected_by__nickname').values('text', 'author', 'selected_by__nickname')
+        ~Q(selected_by=None) | Q(author=game_round.painter),
+        game_round=game_round)
     for variant in variants:
-        if variant['author'] == game_round.painter.id:
-            selects['correct'] = {
-                'text': variant['text'],
-                'selected_by': variant['selected_by__nickname']
+        if variant.author == game_round.painter:
+            answers['correct'] = {
+                'text': variant.text,
+                'selected_by': [player.avatar.url for player in variant.selected_by.all()]
             }
         else:
-            selects['incorrect'].append({
-                'text': variant['text'],
-                'selected_by': variant['selected_by__nickname']
+            answers['incorrect'].append({
+                'text': variant.text,
+                'selected_by': [player.avatar.url for player in variant.selected_by.all()]
             })
+    return answers

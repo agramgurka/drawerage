@@ -43,11 +43,11 @@ function init_status_screen(players, stage) {
         status_block.appendChild(status);
         screen.appendChild(status_block);
     }
-    display_screen(screen);
+    return screen;
 };
 
 function init_task_screen(task_type, task){
-    const screen = document.getElementById("task_screen");
+    let screen = document.getElementById("task_screen");
     let drawing_task = document.getElementById("drawing_task");
     let writing_task = document.getElementById("writing_task");
     let types = document.querySelectorAll('.task_type');
@@ -86,11 +86,11 @@ function init_task_screen(task_type, task){
         }
         selecting_task.append(ul);
     }
-    display_screen(screen);
+    return screen;
 };
 
 function init_results_screen(results){
-    const screen = document.getElementById("results_screen");
+    let  screen = document.getElementById("results_screen");
     screen.innerHTML = "";
     for (let i in results) {
         let result_block = document.createElement("div");
@@ -109,8 +109,76 @@ function init_results_screen(results){
         result_block.appendChild(increment);
         screen.appendChild(result_block);
     }
-    display_screen(screen);
+    return screen;
 };
+
+function init_answers_screen(variants) {
+    const screen = document.getElementById("answers_screen");
+    const variants_block = document.getElementById("variants_block");
+    set_timer(0);
+    variants_block.innerHTML = "";
+    for (let i in variants) {
+        let variant = document.createElement("div");
+        variant.innerHTML = variants[i];
+        variants_block.append(variant);
+    }
+    const variant_text = document.getElementById("variant_text");
+    variant_text.innerHTML = "";
+    const variant_selects = document.getElementById("variant_selects");
+    variant_selects.innerHTML = "";
+    const variant_details = document.getElementById("variant_details");
+    if (variant_details.classList.contains('incorrect_answer'))
+             variant_details.classList.remove('incorrect_answer');
+    if (variant_details.classList.contains('correct_answer'))
+             variant_details.classList.remove('correct_answer');
+    return screen;
+}
+
+function display_answer(answer, is_correct) {
+    let variant_details = document.getElementById("variant_details");
+    if (variant_details.classList.contains('incorrect_answer'))
+             variant_details.classList.remove('incorrect_answer');
+    if (variant_details.classList.contains('correct_answer'))
+             variant_details.classList.remove('correct_answer');
+    const variant_text = document.getElementById("variant_text");
+    variant_text.innerHTML = answer.text;
+    const variant_selects = document.getElementById("variant_selects");
+    variant_selects.innerHTML = ""
+    if (answer.selected_by.length) {
+        for (let i in answer.selected_by) {
+            delay = 1000 * (parseInt(i) + 1);
+            setTimeout(display_selected_by, delay, variant_selects, answer.selected_by[i]);
+            if (i == answer.selected_by.length - 1)
+            setTimeout(display_correctness, delay + 1000, is_correct);
+        }
+    }
+    else
+        setTimeout(display_correctness, 1000, is_correct);
+
+}
+
+function display_correctness(is_correct) {
+    let variant_details = document.getElementById("variant_details");
+    if (is_correct) {
+        if (!variant_details.classList.contains('correct_answer'))
+             variant_details.classList.add('correct_answer');
+        if (variant_details.classList.contains('incorrect_answer'))
+             variant_details.classList.remove('incorrect_answer');
+    }
+    else {
+        if (variant_details.classList.contains('correct_answer'))
+             variant_details.classList.remove('correct_answer');
+        if (!variant_details.classList.contains('incorrect_answer'))
+             variant_details.classList.add('incorrect_answer');
+    }
+}
+
+function display_selected_by(variant, player) {
+        let player_img = document.createElement('img');
+        player_img.classList.add('selected_by_icon');
+        player_img.src = player;
+        variant.appendChild(player_img);
+}
 
 function display_screen(screen) {
     let all_screens = document.querySelectorAll('.game_screen');
@@ -285,4 +353,3 @@ function cancel_game() {
     );
     display_buttons([]);
 }
-
