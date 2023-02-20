@@ -79,3 +79,40 @@
     background: white;
     z-index: 100;
 }
+
+.selected_by_icon {
+   width: 75px;
+   height: 75px;
+   border: 2px solid;
+   border-radius:50%;
+   -moz-border-radius:50%;
+   -webkit-border-radius:50%;
+   margin: 15px;
+
+}
+
+#variants_block > div {
+   border-bottom: 1px dashed;
+   font-size: 25px;
+   margin-bottom: 15px;
+}
+
+#variant_text {
+   font-weight: bold;
+   font-size: 30px;
+   margin: 15px;
+}
+
+.correct_answer {
+    border: 5px solid green;
+    border-radius:10%;
+   -moz-border-radius:10%;
+   -webkit-border-radius:10%;
+}
+
+.incorrect_answer {
+    border: 5px solid red;
+    border-radius:10%;
+   -moz-border-radius:10%;
+   -webkit-border-radius:10%;
+}

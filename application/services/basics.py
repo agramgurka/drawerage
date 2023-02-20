@@ -34,6 +34,7 @@ class RoundStage(StrEnum):
     not_started = 'not started'
     writing = 'writing'
     selecting = 'selecting'
+    answers = 'answers'
     results = 'results'
     finished = 'finished'
 
@@ -43,6 +44,7 @@ class GameScreens(StrEnum):
     task = 'task'
     results = 'results'
     pause = 'pause'
+    answers = 'answers'
 
 
 class TaskType(StrEnum):
@@ -61,6 +63,7 @@ class StageTime(IntEnum):
     writing = 40
     selecting = 30
     results = 10
+    for_one_select = 3
 
 
 class MediaType(StrEnum):
