@@ -18,18 +18,16 @@ from .forms import JoinGameForm
 logger = setup_logger(__name__)
 
 
-class Proxy(View):
-    def get(self, request):
-        active_game = get_active_game(request.user)
-        if active_game:
-            return redirect(reverse('game', args=[active_game]))
-        return redirect('start_page')
-
-
 class StartPage(FormView):
     template_name = 'start_page.html'
     form_class = JoinGameForm
     game_id = None
+
+    def get(self, request, *args, **kwargs):
+        active_game = get_active_game(request.user)
+        if active_game:
+            return redirect(reverse('game', args=[active_game]))
+        return super().get(request, *args, **kwargs)
 
     def form_valid(self, form):
         game_code = form.cleaned_data['game_code']
@@ -53,7 +51,7 @@ class CreateGame(View):
 class Game(View):
     def get(self, request, pk):
         if get_game_stage(pk) == GameStage.finished:
-            return redirect('proxy')
+            return redirect('start_page')
         drawing_color = get_player_color(pk, request.user)
         return render(request, 'game.html', {'game_id': pk, 'drawing_color': drawing_color})
 
