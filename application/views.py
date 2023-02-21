@@ -10,7 +10,7 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned, 
 from .services.db_function import (join_game, create_game, get_active_game,
                                    upload_avatar, upload_painting,
                                    apply_variant, select_variant, get_game_stage,
-                                   get_player_color)
+                                   get_player_color, is_player)
 from .services.basics import MediaType, GameStage
 from .services.utils import setup_logger
 from .forms import JoinGameForm
@@ -50,7 +50,8 @@ class CreateGame(View):
 
 class Game(View):
     def get(self, request, pk):
-        if get_game_stage(pk) == GameStage.finished:
+        game_stage = get_game_stage(pk)
+        if game_stage == GameStage.finished or not is_player(pk, request.user):
             return redirect('start_page')
         drawing_color = get_player_color(pk, request.user)
         return render(request, 'game.html', {'game_id': pk, 'drawing_color': drawing_color})
