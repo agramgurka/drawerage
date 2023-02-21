@@ -59,6 +59,10 @@ def create_player(user: User, nickname: str = None, is_host: bool = False) -> Pl
     return Player.objects.create(user=user, nickname=nickname, is_host=is_host, drawing_color=color)
 
 
+def is_player(game_id: int, user: User) -> bool:
+    return Game.objects.filter(pk=game_id, players__user=user).exists()
+
+
 def create_game(request, cycles=2) -> int:
     """ creates new game object and adds game's host to it """
 
