@@ -1,5 +1,3 @@
-        var drawingColor = drawing_color;
-
         // Variables for referencing the canvas and 2dcanvas context
 		var canvas,ctx;
 
@@ -31,7 +29,7 @@
 		// Set-up the canvas and add our event handlers after the page has loaded
 		function init() {
 				// Get the specific canvas element from the HTML document
-				canvas = document.getElementById('drawing_canvas');
+				canvas = document.getElementById('drawing-canvas');
 
 				canvas.focus();
 

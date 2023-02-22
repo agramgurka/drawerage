@@ -2,7 +2,7 @@
     display: none
 }
 
-.player_avatar {
+.player-avatar {
     width: 100px;
     height: 100px;
 }
@@ -51,28 +51,28 @@
   animation-delay: 0.2s;
 }
 
-.validationError {
+.validation-error {
     color: #a00;
 }
 
-.result_name {
+.result-name {
     font-weight: bold;
 }
 
-#drawing_canvas{
+#drawing-canvas{
     border: 1px solid;
 }
 
-.option_block:hover {
+.option-block:hover {
    background-color: yellow;
    cursor: pointer;
 }
 
-.option_block:active {
+.option-block:active {
    background-color: red;
 }
 
-#pause_popup {
+#pause-popup {
     position: absolute;
     width: 100%;
     height: 100%;
@@ -80,7 +80,7 @@
     z-index: 100;
 }
 
-.selected_by_icon {
+.selected-by-icon {
    width: 75px;
    height: 75px;
    border: 2px solid;
@@ -91,26 +91,26 @@
 
 }
 
-#variants_block > div {
+#variants-block > div {
    border-bottom: 1px dashed;
    font-size: 25px;
    margin-bottom: 15px;
 }
 
-#variant_text {
+#variant-text {
    font-weight: bold;
    font-size: 30px;
    margin: 15px;
 }
 
-.correct_answer {
+.correct-answer {
     border: 5px solid green;
     border-radius:10%;
    -moz-border-radius:10%;
    -webkit-border-radius:10%;
 }
 
-.incorrect_answer {
+.incorrect-answer {
     border: 5px solid red;
     border-radius:10%;
    -moz-border-radius:10%;

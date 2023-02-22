@@ -10,57 +10,57 @@
 </head>
 
 <body>
-<div id="pause_popup" class="invisible text-center p-5">
-        <h1 id="pause_text">GAME IS PAUSED</h1>
-        <button id="resume_game" type="button" class="btn btn-secondary invisible control_btn"> Resume </button>
+<div id="pause-popup" class="invisible text-center p-5">
+        <h1 id="pause-text">GAME IS PAUSED</h1>
+        <button id="resume-game" type="button" class="btn btn-secondary invisible control-btn"> Resume </button>
 </div>
 <div class="container">
     <div class="row justify-content-center">
-        <h1 class="col-sm-2" id="game_code"></h1>
+        <h1 class="col-sm-2" id="game-code"></h1>
     </div>
      <div id="timer" class="row invisible"></div>
 
-     <div id="status_screen" class="game_screen invisible row justify-content-around"></div>
+     <div id="status-screen" class="game-screen invisible row justify-content-around"></div>
 
-     <div id="task_screen" class="game_screen invisible row justify-content-center">
-         <div id="drawing_task" class="task_type invisible col-md-6">
-                 <canvas id="drawing_canvas"></canvas>
-                 <div class="text_area"><div id="task"></div></div>
-                 <button type="button" id="submit_painting" class="btn btn btn-secondary" >Send</button>
+     <div id="task-screen" class="game-screen invisible row justify-content-center">
+         <div id="drawing-task" class="task-type invisible col-md-6">
+                 <canvas id="drawing-canvas"></canvas>
+                 <div class="text-area"><div id="task"></div></div>
+                 <button type="button" id="submit-painting" class="btn btn btn-secondary" >Send</button>
          </div>
-         <div id="writing_task" class="task_type invisible col-md-6">
-             <div class="drawing_area"><img src="" id="round_painting"></div>
-             <div class="text_area">
-                 <form id="variantForm">
+         <div id="writing-task" class="task-type invisible col-md-6">
+             <div class="drawing-area"><img src="" id="round-painting"></div>
+             <div class="text-area">
+                 <form id="variant-form">
                      <div class="input-group mb-3">
                          <input id="variant" type="text" class="form-control" placeholder=""
                                 aria-label="">
-                         <button class="btn btn-primary" type="submit" id="submit_variant">Send</button>
+                         <button class="btn btn-primary" type="submit" id="submit-variant">Send</button>
                      </div>
-                     <div class="validationError"></div>
+                     <div class="validation-error"></div>
                  </form>
              </div>
          </div>
-         <ul id="selecting_task" class="task_type invisible list-group col-sm-6"></ul>
+         <ul id="selecting-task" class="task-type invisible list-group col-sm-6"></ul>
      </div>
-     <div id="answers_screen" class="game_screen invisible row">
-         <div id="variants_block" class="col-sm-5"></div>
-         <div id="variant_details" class="col-sm-7">
-             <div id="variant_text"></div>
-             <div id="variant_selects"></div>
+     <div id="answers-screen" class="game-screen invisible row">
+         <div id="variants-block" class="col-sm-5"></div>
+         <div id="variant-details" class="col-sm-7">
+             <div id="variant-text"></div>
+             <div id="variant-selects"></div>
          </div>
      </div>
-     <div id="results_screen" class="game_screen invisible row"></div>
+     <div id="results-screen" class="game-screen invisible row"></div>
 
-     <button id="start_game" type="button" class="btn btn-secondary invisible control_btn"> Start </button>
-     <button id="pause_game" type="button" class="btn btn-secondary invisible control_btn"> Pause </button>
-     <button id="cancel_game" type="button" class="btn btn-secondary invisible control_btn"> Cancel </button>
+     <button id="start-game" type="button" class="btn btn-secondary invisible control-btn"> Start </button>
+     <button id="pause-game" type="button" class="btn btn-secondary invisible control-btn"> Pause </button>
+     <button id="cancel-game" type="button" class="btn btn-secondary invisible control-btn"> Cancel </button>
 
 </div>
 <script>
-    const game_id = {{game_id}};
-    const drawing_color = "{{drawing_color}}";
-    const static_url = {% get_static_prefix %};
+    const gameId = {{game_id}};
+    const drawingColor = "{{drawing_color}}";
+    const staticUrl = {% get_static_prefix %};
 </script>
 <script src="{%static 'js/functions.js'%}"></script>
 <script src="{%static 'js/websocket.js'%}"></script>
