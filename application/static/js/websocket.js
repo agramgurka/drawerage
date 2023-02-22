@@ -3,7 +3,7 @@ function connect() {
       (window.location.protocol === 'https:' ? 'wss://' : 'ws://') +
       window.location.host +
       '/ws/game/' +
-      game_id +
+      gameId +
       '/'
     );
 }
@@ -21,45 +21,42 @@ ws.onmessage = function(response) {
     const res = JSON.parse(response.data);
     const command = res.command;
     if (command == "update") {
-        const active_screen = res.active_screen;
-        if (active_screen == "status") {
-            let screen = init_status_screen(res.players, res.task_type)
-            display_screen(screen);
+        const activeScreen = res.active_screen;
+        let screen = null;
+        if (activeScreen == "status") {
+            screen = initStatusScreen(res.players, res.task_type)
         }
-        if (active_screen == "task") {
-            let screen = init_task_screen(res.task_type, res.task);
-            display_screen(screen);
+        if (activeScreen == "task") {
+            screen = initTaskScreen(res.task_type, res.task);
         }
-        if (active_screen == "results") {
-            let screen = init_results_screen(res.results);
-            display_screen(screen);
+        if (activeScreen == "results") {
+            screen = initResultsScreen(res.results);
         }
-        if (active_screen == "answers") {
-            let screen = init_answers_screen(res.variants);
-            display_screen(screen);
+        if (activeScreen == "answers") {
+            screen = initAnswersScreen(res.variants);
         }
-
+        displayScreen(screen);
     }
     if (command == "display_answer") {
-        display_answer(res.variant, res.is_correct);
+        displayAnswer(res.variant, res.is_correct);
     }
     if (command == "pause") {
-        display_pause_popup(res.text);
+        displayPausePopup(res.text);
     }
     if (command == "resume") {
-        hide_pause_popup();
+        hidePausePopup();
     }
     if (command == "state") {
         if (res.stage) {
-            let enabled_buttons = ["cancel_game", "resume_game"];
-            if (res.stage == "pregame") enabled_buttons.push("start_game");
-            else if (res.stage != "finished") enabled_buttons.push("pause_game");
-            display_buttons(enabled_buttons);
+            let enabledButtons = ["cancel-game", "resume-game"];
+            if (res.stage == "pregame") enabledButtons.push("start-game");
+            else if (res.stage != "finished") enabledButtons.push("pause-game");
+            displayButtons(enabledButtons);
         }
-        if (res.game_code) display_game_code(res.game_code);
-        if (res.is_paused) display_pause_popup();
+        if (res.game_code) displayGameCode(res.game_code);
+        if (res.is_paused) displayPausePopup();
     }
     if (command == "timer") {
-        set_timer(res.time);
+        setTimer(res.time);
     }
 };

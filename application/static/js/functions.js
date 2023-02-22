@@ -13,193 +13,192 @@ function getCookie(name) {
     return cookieValue;
 }
 
-function init_status_screen(players, stage) {
-    const screen = document.getElementById("status_screen");
+function initStatusScreen(players, stage) {
+    const screen = document.getElementById("status-screen");
     screen.innerHTML = "";
     for (let i in players) {
-        let status_block = document.createElement("div");
-        status_block.classList.add("status_block", "col-md-5", "text-center", "py-4");
-        let player_name = document.createElement("div");
-        player_name.innerHTML = i;
-        player_name.classList.add("player_name");
-        let player_avatar = document.createElement("div");
+        let statusBlock = document.createElement("div");
+        statusBlock.classList.add("status-block", "col-md-5", "text-center", "py-4");
+        let playerName = document.createElement("div");
+        playerName.innerHTML = i;
+        playerName.classList.add("player-name");
+        let playerAvatar = document.createElement("div");
         if (players[i].avatar){
-            player_avatar = document.createElement("img");
-            player_avatar.src = players[i].avatar;
-            player_avatar.classList.add("player_avatar");
+            playerAvatar = document.createElement("img");
+            playerAvatar.src = players[i].avatar;
+            playerAvatar.classList.add("player-avatar");
         }
         let status = document.createElement("img");
         if (players[i].finished) {
-             status.src = static_url + "icons/status_ok.png";
+             status.src = staticUrl + "icons/status_ok.png";
         }
         else {
             status.classList.add('status-' + stage);
-            status.src = static_url + "icons/status_" + stage + ".png";
+            status.src = staticUrl + "icons/status_" + stage + ".png";
         }
         status.innerHTML = players[i].finished;
         status.classList.add("status");
-        status_block.appendChild(player_name);
-        status_block.appendChild(player_avatar);
-        status_block.appendChild(status);
-        screen.appendChild(status_block);
+        statusBlock.appendChild(playerName);
+        statusBlock.appendChild(playerAvatar);
+        statusBlock.appendChild(status);
+        screen.appendChild(statusBlock);
     }
     return screen;
 };
 
-function init_task_screen(task_type, task){
-    let screen = document.getElementById("task_screen");
-    let drawing_task = document.getElementById("drawing_task");
-    let writing_task = document.getElementById("writing_task");
-    let types = document.querySelectorAll('.task_type');
+function initTaskScreen(taskType, task){
+    let screen = document.getElementById("task-screen");
+    let types = document.querySelectorAll('.task-type');
     types.forEach(type => {
         if (!type.classList.contains("invisible")){
             type.classList.add("invisible");
         }
     })
-    if (task_type == "drawing"){
-        drawing_task.classList.remove("invisible");
-        let canvas = document.getElementById("drawing_canvas");
+    if (taskType === "drawing"){
+        let drawingTask = document.getElementById("drawing-task");
+        drawingTask.classList.remove("invisible");
+        let canvas = document.getElementById("drawing-canvas");
         let context = canvas.getContext("2d");
         context.clearRect(0, 0, canvas.width, canvas.height);
-        let task_area = document.getElementById("task");
-        task_area.innerHTML = task;
+        let taskArea = document.getElementById("task");
+        taskArea.innerHTML = task;
     }
-    if (task_type == "writing"){
-        writing_task.classList.remove("invisible");
-        let round_painting = document.getElementById("round_painting");
-        round_painting.src = task;
+    if (taskType === "writing"){
+        let writingTask = document.getElementById("writing-task");
+        writingTask.classList.remove("invisible");
+        let roundPainting = document.getElementById("round-painting");
+        roundPainting.src = task;
         let variant = document.getElementById("variant");
         variant.value = "";
     }
-    if (task_type == "selecting"){
-        let selecting_task = document.getElementById("selecting_task");
-        selecting_task.classList.remove("invisible");
-        selecting_task.innerHTML = "";
+    if (taskType === "selecting"){
+        let selectingTask = document.getElementById("selecting-task");
+        selectingTask.classList.remove("invisible");
+        selectingTask.innerHTML = "";
         const ul = document.createElement("ul");
-        ul.classList.add('list-group');
+        ul.classList.add("list-group");
         for (let option in task) {
-            let option_block = document.createElement("li");
-            option_block.innerHTML = task[option];
-            option_block.classList.add("option_block", "list-group-item");
-            option_block.onclick = select_variant;
-            ul.append(option_block);
+            let optionBlock = document.createElement("li");
+            optionBlock.innerHTML = task[option];
+            optionBlock.classList.add("option-block", "list-group-item");
+            optionBlock.addEventListener("click", selectVariant);
+            ul.append(optionBlock);
         }
-        selecting_task.append(ul);
+        selectingTask.append(ul);
     }
     return screen;
 };
 
-function init_results_screen(results){
-    let  screen = document.getElementById("results_screen");
+function initResultsScreen(results){
+    let  screen = document.getElementById("results-screen");
     screen.innerHTML = "";
     for (let i in results) {
-        let result_block = document.createElement("div");
-        result_block.classList.add("result_block", "shadow-sm", "p-3", "mb-1", "bg-body", "rounded");
-        let result_name = document.createElement("div");
-        result_name.innerHTML = results[i].player__nickname;
-        result_name.classList.add("result_name");
+        let resultBlock = document.createElement("div");
+        resultBlock.classList.add("result-block", "shadow-sm", "p-3", "mb-1", "bg-body", "rounded");
+        let resultName = document.createElement("div");
+        resultName.innerHTML = results[i].player__nickname;
+        resultName.classList.add("result-name");
         let result = document.createElement("div");
         result.innerHTML = results[i].result;
         result.classList.add("result");
         let increment = document.createElement("div");
         increment.innerHTML = "+" + results[i].round_increment;
         increment.classList.add("increment");
-        result_block.appendChild(result_name);
-        result_block.appendChild(result);
-        result_block.appendChild(increment);
-        screen.appendChild(result_block);
+        resultBlock.appendChild(resultName);
+        resultBlock.appendChild(result);
+        resultBlock.appendChild(increment);
+        screen.appendChild(resultBlock);
     }
     return screen;
 };
 
-function init_answers_screen(variants) {
-    const screen = document.getElementById("answers_screen");
-    const variants_block = document.getElementById("variants_block");
-    set_timer(0);
-    variants_block.innerHTML = "";
+function initAnswersScreen(variants) {
+    const screen = document.getElementById("answers-screen");
+    const variantsBlock = document.getElementById("variants-block");
+    setTimer(0);
+    variantsBlock.innerHTML = "";
     for (let i in variants) {
         let variant = document.createElement("div");
         variant.innerHTML = variants[i];
-        variants_block.append(variant);
+        variantsBlock.append(variant);
     }
-    const variant_text = document.getElementById("variant_text");
-    variant_text.innerHTML = "";
-    const variant_selects = document.getElementById("variant_selects");
-    variant_selects.innerHTML = "";
-    const variant_details = document.getElementById("variant_details");
-    if (variant_details.classList.contains('incorrect_answer'))
-             variant_details.classList.remove('incorrect_answer');
-    if (variant_details.classList.contains('correct_answer'))
-             variant_details.classList.remove('correct_answer');
+    const variantText = document.getElementById("variant-text");
+    variantText.innerHTML = "";
+    const variantSelects = document.getElementById("variant-selects");
+    variantSelects.innerHTML = "";
+    const variantDetails = document.getElementById("variant-details");
+    if (variantDetails.classList.contains('incorrect-answer'))
+             variantDetails.classList.remove('incorrect-answer');
+    if (variantDetails.classList.contains('correct-answer'))
+             variantDetails.classList.remove('correct-answer');
     return screen;
 }
 
-function display_answer(answer, is_correct) {
-    let variant_details = document.getElementById("variant_details");
-    if (variant_details.classList.contains('incorrect_answer'))
-             variant_details.classList.remove('incorrect_answer');
-    if (variant_details.classList.contains('correct_answer'))
-             variant_details.classList.remove('correct_answer');
-    const variant_text = document.getElementById("variant_text");
-    variant_text.innerHTML = answer.text;
-    const variant_selects = document.getElementById("variant_selects");
-    variant_selects.innerHTML = ""
+function displayAnswer(answer, isCorrect) {
+    let variantDetails = document.getElementById("variant-details");
+    if (variantDetails.classList.contains('incorrect-answer'))
+             variantDetails.classList.remove('incorrect-answer');
+    if (variantDetails.classList.contains('correct-answer'))
+             variantDetails.classList.remove('correct-answer');
+    const variantText = document.getElementById("variant-text");
+    variantText.innerHTML = answer.text;
+    const variantSelects = document.getElementById("variant-selects");
+    variantSelects.innerHTML = ""
     if (answer.selected_by.length) {
         for (let i in answer.selected_by) {
             delay = 1000 * (parseInt(i) + 1);
-            setTimeout(display_selected_by, delay, variant_selects, answer.selected_by[i]);
+            setTimeout(displaySelectedBy, delay, variantSelects, answer.selected_by[i]);
             if (i == answer.selected_by.length - 1)
-            setTimeout(display_correctness, delay + 1000, is_correct);
+            setTimeout(displayCorrectness, delay + 1000, isCorrect);
         }
     }
     else
-        setTimeout(display_correctness, 1000, is_correct);
-
+        setTimeout(displayCorrectness, 1000, isCorrect);
 }
 
-function display_correctness(is_correct) {
-    let variant_details = document.getElementById("variant_details");
-    if (is_correct) {
-        if (!variant_details.classList.contains('correct_answer'))
-             variant_details.classList.add('correct_answer');
-        if (variant_details.classList.contains('incorrect_answer'))
-             variant_details.classList.remove('incorrect_answer');
+function displayCorrectness(isCorrect) {
+    let variantDetails = document.getElementById("variant-details");
+    if (isCorrect) {
+        if (!variantDetails.classList.contains("correct-answer"))
+             variantDetails.classList.add("correct-answer");
+        if (variantDetails.classList.contains("incorrect-answer"))
+             variantDetails.classList.remove("incorrect-answer");
     }
     else {
-        if (variant_details.classList.contains('correct_answer'))
-             variant_details.classList.remove('correct_answer');
-        if (!variant_details.classList.contains('incorrect_answer'))
-             variant_details.classList.add('incorrect_answer');
+        if (variantDetails.classList.contains("correct-answer"))
+             variantDetails.classList.remove("correct-answer");
+        if (!variantDetails.classList.contains('incorrect-answer'))
+             variantDetails.classList.add("incorrect-answer");
     }
 }
 
-function display_selected_by(variant, player) {
-        let player_img = document.createElement('img');
-        player_img.classList.add('selected_by_icon');
-        player_img.src = player;
-        variant.appendChild(player_img);
+function displaySelectedBy(variant, player) {
+        let playerImg = document.createElement('img');
+        playerImg.classList.add('selected-by-icon');
+        playerImg.src = player;
+        variant.appendChild(playerImg);
 }
 
-function display_screen(screen) {
-    let all_screens = document.querySelectorAll('.game_screen');
-    all_screens.forEach((scr) =>  {
-       if (!scr.classList.contains('invisible')) {
-                scr.classList.add('invisible');
+function displayScreen(screen) {
+    let allScreens = document.querySelectorAll(".game-screen");
+    allScreens.forEach((scr) =>  {
+       if (!scr.classList.contains("invisible")) {
+                scr.classList.add("invisible");
             }
     })
-    screen.classList.remove('invisible');
+    screen.classList.remove("invisible");
 
 }
 
-function display_game_code(game_code) {
-    code_block = document.getElementById("game_code");
-    code_block.innerHTML = game_code;
+function displayGameCode(gameCode) {
+    codeBlock = document.getElementById("game-code");
+    codeBlock.innerHTML = gameCode;
 }
 
-function display_buttons(enabled_buttons) {
-    control_btns = document.querySelectorAll('.control_btn');
-    control_btns.forEach((button) => {
-        if (enabled_buttons.includes(button.id)) {
+function displayButtons(enabledButtons) {
+    controlBtns = document.querySelectorAll(".control-btn");
+    controlBtns.forEach((button) => {
+        if (enabledButtons.includes(button.id)) {
             if (button.classList.contains("invisible")) {
             button.classList.remove("invisible");
             }
@@ -212,39 +211,38 @@ function display_buttons(enabled_buttons) {
 
 })}
 
-function display_pause_popup(text){
-    const pause_popup = document.getElementById("pause_popup");
+function displayPausePopup(text){
+    const pausePopup = document.getElementById("pause-popup");
     if (text) {
-        let pause_text = document.getElementById("pause_text");
-        pause_text.innerHTML = text;
+        let pauseText = document.getElementById("pause-text");
+        pauseText.innerHTML = text;
     }
-    if (pause_popup.classList.contains("invisible")){
-         pause_popup.classList.remove("invisible");
+    if (pausePopup.classList.contains("invisible")){
+         pausePopup.classList.remove("invisible");
     }
 };
 
-function hide_pause_popup() {
-    const pause_popup = document.getElementById("pause_popup");
-    if (!pause_popup.classList.contains("invisible")) {
-         pause_popup.classList.add("invisible");
+function hidePausePopup() {
+    const pausePopup = document.getElementById("pause-popup");
+    if (!pausePopup.classList.contains("invisible")) {
+         pausePopup.classList.add("invisible");
     }
 }
 
-function set_timer(time) {
+function setTimer(time) {
     let timer = document.getElementById("timer");
     if (timer.classList.contains("invisible")) {
         timer.classList.remove("invisible");
     }
     timer.innerHTML = time;
-    console.log(time);
-    if (time == 0) {
+    if (time === 0) {
         timer.classList.add("invisible");
-        upload_media();
+        uploadMedia();
     }
 }
 
-function submit_painting() {
-    canvas = document.getElementById("drawing_canvas");
+function submitPainting() {
+    canvas = document.getElementById("drawing-canvas");
     painting = canvas.toDataURL("image/png");
     let csrftoken = getCookie('csrftoken');
     fetch("/upload/", {
@@ -252,7 +250,7 @@ function submit_painting() {
         credentials: "same-origin",
         headers: { "X-CSRFToken": csrftoken },
         body: JSON.stringify({
-            "game_id": game_id,
+            "game_id": gameId,
             "media_type": "painting",
             "media": painting
         })
@@ -260,7 +258,7 @@ function submit_painting() {
     .then((response) => console.log(response));
 }
 
-function select_variant() {
+function selectVariant() {
     let answer = this.innerHTML;
     let csrftoken = getCookie('csrftoken');
     fetch(window.location.origin + "/upload/", {
@@ -268,16 +266,16 @@ function select_variant() {
         credentials: "same-origin",
         headers: { "X-CSRFToken": csrftoken },
         body: JSON.stringify({
-            "game_id": game_id,
+            "game_id": gameId,
             "media_type": "answer",
             "media": answer
         })
     })
 };
 
-function submit_variant(e) {
+function submitVariant(e) {
     e.preventDefault();
-    const errorEl = document.querySelector('#variantForm .validationError');
+    const errorEl = document.querySelector('#variant-form .validation-error');
     errorEl.innerHTML = '';
 
     const variant = document.getElementById("variant").value;
@@ -287,7 +285,7 @@ function submit_variant(e) {
         credentials: "same-origin",
         headers: { "X-CSRFToken": csrftoken },
         body: JSON.stringify({
-            "game_id": game_id,
+            "game_id": gameId,
             "media_type": "variant",
             "media": variant
         })
@@ -305,51 +303,50 @@ function submit_variant(e) {
     });
 }
 
-function upload_media() {
-    console.log("upload media function is called");
-    let writing_task = document.getElementById("writing_task");
-    let drawing_task = document.getElementById("drawing_task");
+function uploadMedia() {
+    let writingTask = document.getElementById("writing-task");
+    let drawingTask = document.getElementById("drawing-task");
 
-    if (!writing_task.classList.contains("invisible")) {
-        submit_variant();
+    if (!writingTask.classList.contains("invisible")) {
+        submitVariant();
     }
-    else if (!drawing_task.classList.contains("invisible")) {
-        submit_painting();
+    else if (!drawingTask.classList.contains("invisible")) {
+        submitPainting();
     }
 }
 
-function start_game() {
+function startGame() {
     ws.send(
         JSON.stringify({
             "command": "start",
         })
     );
-    display_buttons(['pause_game', 'cancel_game']);
+    displayButtons(['pause-game', 'cancel-game']);
 }
 
-function pause_game() {
+function pauseGame() {
     ws.send(
         JSON.stringify({
             "command": "pause",
         })
     );
-    display_buttons(['resume_game', 'cancel_game']);
+    displayButtons(['resume-game', 'cancel-game']);
 }
 
-function resume_game() {
+function resumeGame() {
     ws.send(
         JSON.stringify({
             "command": "resume",
         })
     );
-    display_buttons(['pause_game', 'cancel_game']);
+    displayButtons(['pause-game', 'cancel-game']);
 }
 
-function cancel_game() {
+function cancelGame() {
     ws.send(
         JSON.stringify({
             "command": "cancel",
         })
     );
-    display_buttons([]);
+    displayButtons([]);
 }
