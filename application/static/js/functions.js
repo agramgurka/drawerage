@@ -127,19 +127,15 @@ function initAnswersScreen(variants) {
     const variantSelects = document.getElementById("variant-selects");
     variantSelects.innerHTML = "";
     const variantDetails = document.getElementById("variant-details");
-    if (variantDetails.classList.contains('incorrect-answer'))
-             variantDetails.classList.remove('incorrect-answer');
-    if (variantDetails.classList.contains('correct-answer'))
-             variantDetails.classList.remove('correct-answer');
+    variantDetails.classList.remove('incorrect-answer');
+    variantDetails.classList.remove('correct-answer');
     return screen;
 }
 
 function displayAnswer(answer, isCorrect) {
     let variantDetails = document.getElementById("variant-details");
-    if (variantDetails.classList.contains('incorrect-answer'))
-             variantDetails.classList.remove('incorrect-answer');
-    if (variantDetails.classList.contains('correct-answer'))
-             variantDetails.classList.remove('correct-answer');
+    variantDetails.classList.remove('incorrect-answer');
+    variantDetails.classList.remove('correct-answer');
     const variantText = document.getElementById("variant-text");
     variantText.innerHTML = answer.text;
     const variantSelects = document.getElementById("variant-selects");
@@ -159,16 +155,12 @@ function displayAnswer(answer, isCorrect) {
 function displayCorrectness(isCorrect) {
     let variantDetails = document.getElementById("variant-details");
     if (isCorrect) {
-        if (!variantDetails.classList.contains("correct-answer"))
-             variantDetails.classList.add("correct-answer");
-        if (variantDetails.classList.contains("incorrect-answer"))
-             variantDetails.classList.remove("incorrect-answer");
+        variantDetails.classList.add("correct-answer");
+        variantDetails.classList.remove("incorrect-answer");
     }
     else {
-        if (variantDetails.classList.contains("correct-answer"))
-             variantDetails.classList.remove("correct-answer");
-        if (!variantDetails.classList.contains('incorrect-answer'))
-             variantDetails.classList.add("incorrect-answer");
+        variantDetails.classList.remove("correct-answer");
+        variantDetails.classList.add("incorrect-answer");
     }
 }
 

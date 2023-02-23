@@ -103,16 +103,98 @@
    margin: 15px;
 }
 
-.correct-answer {
-    border: 5px solid green;
-    border-radius:10%;
-   -moz-border-radius:10%;
-   -webkit-border-radius:10%;
+/*
+.correct-answer .variant-text {
+    border-color: green;
+    border-radius: 1rem;
+}
+*/
+
+/*
+.incorrect-answer .variant-details {
+    border-color: red;
+    border-radius:1rem;
+}
+*/
+
+.variant-details-text-container .variant-details-text-inner {
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background-color: pink;
 }
 
-.incorrect-answer {
-    border: 5px solid red;
-    border-radius:10%;
-   -moz-border-radius:10%;
-   -webkit-border-radius:10%;
+.variant-details-text-container {
+	box-sizing: border-box;
+	padding: 15px;
+	position: relative;
+	overflow: hidden;
+}
+
+.variant-details-text-container::before {
+	content: '';
+    position: absolute;
+    width: 2079px;
+    height: 2000px;
+    /*
+    width: 200%;
+    height: 300%;
+    */
+}
+
+
+.variant-details-text-container .variant-details-text-inner {
+	position: relative;
+	background-color: white;
+	flex-direction: column;
+	box-sizing: border-box;
+	/*padding: 30px;*/
+	text-align: center;
+	font-family: sans-serif;
+	z-index: 2;
+}
+
+
+.correct-answer .variant-details-text-container::before {
+    background: repeating-linear-gradient(
+        white 0%,
+        white 7.5px,
+        green 7.5px,
+        green 15px,
+        white 15px,
+        white 22.5px,
+        green 22.5px,
+        green 30px);
+
+	transform: translateX(-20%) translateY(-20%) rotate(-45deg);
+	animation: animate 20s linear infinite;
+}
+
+.correct-answer .variant-details-text-container,
+.correct-answer .variant-details-text-container .variant-details-text-inner {
+	box-shadow: 0 0 2px green,
+				0 0 5px rgba(0, 0, 0, 1),
+				inset 0 0 5px rgba(0, 0, 0, 1);
+	border-radius: 2rem;
+}
+
+@keyframes animate {
+	from {
+		background-position: 0;
+	}
+
+	to {
+		background-position: 0 450px;
+	}
+}
+
+.incorrect-answer .variant-details-text-container {
+    background: #f99;
+}
+
+.incorrect-answer .variant-details-text-container,
+.incorrect-answer .variant-details-text-container .variant-details-text-inner {
+    box-shadow: 0 0 2px red;
+	border-radius: 2rem;
 }
