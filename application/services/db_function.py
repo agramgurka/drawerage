@@ -1,16 +1,15 @@
 import base64
-import random
 from random import choices
 from typing import Optional
 
 from django.contrib.auth.models import User
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.db.models import F, Count, Q
 from django.http import HttpRequest
 from django.core.files.base import ContentFile
 
 from ..models import Player, Game, Round, Variant, Result
-from .basics import (DrawingColors,
+from .basics import (DRAWING_COLORS,
                      GameRole, GameStage, RoundStage,
                      POINTS_FOR_CORRECT_ANSWER,
                      POINTS_FOR_RECOGNITION,
@@ -51,12 +50,23 @@ def register_channel(game_id: int, user: User, channel_name: str):
     Player.objects.filter(games=game_id, user=user).update(channel_name=channel_name)
 
 
-def create_player(user: User, nickname: str = None, is_host: bool = False) -> Player:
+def create_player(game_id: int, user: User, nickname: str = None, is_host: bool = False) -> Player:
     """ creates player's record """
 
-    color = random.choices([color.value for color in DrawingColors])[0]
+    color = None
+    if not is_host:
+        color = pick_color(game_id)
 
     return Player.objects.create(user=user, nickname=nickname, is_host=is_host, drawing_color=color)
+
+
+def pick_color(game_id: int) -> str:
+    if Player.objects.filter(games=game_id, is_host=False).count() + 1 > len(DRAWING_COLORS):
+        raise ValueError('number of players is greater than number of drawing colors')
+    while True:
+        color = choices(DRAWING_COLORS, k=1)
+        if not Player.objects.filter(games=game_id, drawing_color=color):
+            return color.pop()
 
 
 def is_player(game_id: int, user: User) -> bool:
@@ -67,7 +77,7 @@ def create_game(request, cycles=2) -> int:
     """ creates new game object and adds game's host to it """
 
     game = Game.objects.create(code=generate_game_code(), cycles=cycles)
-    host = create_player(user=request.user, is_host=True)
+    host = create_player(game_id=game.pk, user=request.user, is_host=True)
     game.players.add(host)
     return game.pk
 
@@ -100,7 +110,7 @@ def join_game(request: HttpRequest, game_code: str, nickname: str) -> Optional[i
     game = Game.objects.get(code=game_code.upper())
     if game.stage == GameStage.pregame:
         if not Player.objects.filter(user=request.user, games=game).exists():
-            player = create_player(user=request.user, nickname=nickname)
+            player = create_player(game_id=game.pk, user=request.user, nickname=nickname)
             game.players.add(player)
         return game.pk
     else:
@@ -162,10 +172,12 @@ def get_players(game_id: int, host: bool = False) -> list:
     return list(Player.objects.filter(games=game_id, is_host=False))
 
 
-def get_game_stage(game_id: int) -> str:
+def get_game_stage(game_id: int) -> Optional[str]:
     """ returns current game stage """
-
-    return Game.objects.get(pk=game_id).stage
+    try:
+        return Game.objects.get(pk=game_id).stage
+    except ObjectDoesNotExist:
+        return None
 
 
 def get_role(user: User, game_id: int) -> Optional[GameRole]:
