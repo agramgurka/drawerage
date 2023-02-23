@@ -59,8 +59,13 @@
     font-weight: bold;
 }
 
+.drawing-canvas-block {
+    display: flex;
+    justify-content: center;
+}
+
 #drawing-canvas{
-    border: 1px solid;
+    border: 5px dashed;
 }
 
 .option-block:hover {
@@ -197,4 +202,40 @@
 .incorrect-answer .variant-details-text-container .variant-details-text-inner {
     box-shadow: 0 0 2px red;
 	border-radius: 2rem;
+}
+
+
+.drawing-color-icon {
+   width: 50px;
+   height: 50px;
+   border: 2px solid;
+   border-radius:50%;
+   -moz-border-radius:50%;
+   -webkit-border-radius:50%;
+   margin: 10px 15px;
+}
+
+#canvas-block {
+    display: inline-flex;
+}
+
+#task {
+    font-size: 25px;
+    margin: 10px 0;
+    text-align: center;
+}
+
+#colors-block {
+    display: flex;
+    justify-content: center;
+}
+
+#submit-painting {
+    width: 50%;
+    font-size: 20px;
+}
+
+.submit-btn-block{
+    display: flex;
+    justify-content: center;
 }

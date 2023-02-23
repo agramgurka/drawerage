@@ -72,14 +72,17 @@ class MediaType(StrEnum):
     answer = 'answer'
 
 
-class DrawingColors(StrEnum):
-    red = 'red'
-    blue = 'blue'
-    pink = 'pink'
-    yellow = 'yellow'
-    orange = 'orange'
-    green = 'green'
-    black = 'black'
+DRAWING_COLORS = [
+    '#4A466D',  # blue
+    '#99454D',  # red
+    '#69536D',  # purple
+    '#3F8F8D',  # green
+    '#855419',  # orange
+    '#877241',  # yellow
+    '#6E4C4E',  # pink
+    '#451e3e',  # dark purple
+    '#7d5d54',  # brown
+]
 
 
 CODE_CHARS = [chr(ord('A') + x) for x in range(26)]

@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
-from .services.basics import GameStage, RoundStage, DrawingColors
+from .services.basics import GameStage, RoundStage
 
 
 class Player(models.Model):
@@ -11,12 +11,7 @@ class Player(models.Model):
     nickname = models.CharField('nickname', max_length=100, null=True)
     avatar = models.ImageField(upload_to='')
     channel_name = models.CharField('ws channel name', max_length=100, null=True, default=None)
-    drawing_color = models.CharField(
-                                     'drawing color',
-                                     max_length=20,
-                                     choices=[(color, color.value) for color in DrawingColors],
-                                     default=DrawingColors.black
-                                     )
+    drawing_color = models.CharField('drawing color', max_length=7, null=True)
 
 
 class Game(models.Model):

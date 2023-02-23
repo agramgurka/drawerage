@@ -24,9 +24,18 @@
 
      <div id="task-screen" class="game-screen invisible row justify-content-center">
          <div id="drawing-task" class="task-type invisible col-md-6">
-                 <canvas id="drawing-canvas"></canvas>
+                  <div class="drawing-canvas-block">
+                      <canvas id="drawing-canvas"></canvas>
+                  </div>
+                  <div id="colors-block">
+                      <button id="main-color" type="button" class="drawing-color-icon"></button>
+                      <button id="secondary-color" type="button" class="drawing-color-icon"></button>
+                  </div>
                  <div class="text-area"><div id="task"></div></div>
-                 <button type="button" id="submit-painting" class="btn btn btn-secondary" >Send</button>
+                 <div class="submit-btn-block">
+                     <button type="button" id="submit-painting" class="btn btn btn-secondary" >Send</button>
+                 </div>
+
          </div>
          <div id="writing-task" class="task-type invisible col-md-6">
              <div class="drawing-area"><img src="" id="round-painting"></div>
@@ -63,7 +72,7 @@
 </div>
 <script>
     const gameId = {{game_id}};
-    const drawingColor = "{{drawing_color}}";
+    const mainColor = "{{drawing_color}}";
     const staticUrl = {% get_static_prefix %};
 </script>
 <script src="{%static 'js/functions.js'%}"></script>
