@@ -1,5 +1,6 @@
 import base64
-from random import choices
+import random
+from functools import lru_cache
 from typing import Optional
 
 from django.contrib.auth.models import User
@@ -15,7 +16,7 @@ from .basics import (DRAWING_COLORS,
                      POINTS_FOR_RECOGNITION,
                      POINTS_FOR_CORRECT_RECOGNITION,
                      GAME_CODE_LEN, USERNAME_LEN, CODE_CHARS,)
-from .tasks import PredefinedTaskProducer, Restriction
+from .tasks import BaseTaskProducer, PredefinedTaskProducer, Restriction, RuslangTaskProducer
 from .utils import setup_logger
 
 logger = setup_logger(__name__)
@@ -25,14 +26,14 @@ def generate_game_code(code_len=GAME_CODE_LEN) -> str:
     """ generates and returns unique shortcode for a game; """
 
     while True:
-        code = ''.join(choices(CODE_CHARS, k=code_len))
+        code = ''.join(random.choices(CODE_CHARS, k=code_len))
         if not Game.objects.filter(code=code).exclude(stage=GameStage.finished).exists():
             return code
 
 
 def generate_username(name_len=USERNAME_LEN):
     while True:
-        new_username = ''.join(choices(population=CODE_CHARS, k=name_len))
+        new_username = ''.join(random.choices(population=CODE_CHARS, k=name_len))
         if not User.objects.filter(username=new_username).exists():
             return new_username
 
@@ -64,7 +65,7 @@ def pick_color(game_id: int) -> str:
     if Player.objects.filter(games=game_id, is_host=False).count() + 1 > len(DRAWING_COLORS):
         raise ValueError('number of players is greater than number of drawing colors')
     while True:
-        color = choices(DRAWING_COLORS, k=1)
+        color = random.choices(DRAWING_COLORS, k=1)
         if not Player.objects.filter(games=game_id, drawing_color=color):
             return color.pop()
 
@@ -117,11 +118,29 @@ def join_game(request: HttpRequest, game_code: str, nickname: str) -> Optional[i
         raise ValueError('Game has already begun')
 
 
+@lru_cache()
+def get_predefined_task_producer(lang) -> PredefinedTaskProducer:
+    return PredefinedTaskProducer(lang)
+
+
+@lru_cache()
+def get_ruslang_task_producer(lang) -> RuslangTaskProducer:
+    return RuslangTaskProducer(lang)
+
+
+def available_task_producers(lang) -> list[BaseTaskProducer]:
+    return [
+        # predefined tasks from databse
+        get_predefined_task_producer(lang),
+        # random phrase from ruslang
+        get_ruslang_task_producer(lang),
+    ]
+
+
 def create_drawing_task(restrictions) -> tuple[str, Restriction]:
     """ returns new painting task """
 
-    return PredefinedTaskProducer().get_task(restrictions)
-    # return "some unique painting task", []
+    return random.choice(available_task_producers('ru')).get_task(restrictions)
 
 
 def create_rounds(game_id: int) -> None:

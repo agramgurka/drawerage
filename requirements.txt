@@ -2,6 +2,7 @@ Django == 4.1.4
 channels == 4.0.0
 daphne == 4.0.0
 Pillow ==  9.4.0
+requests == 2.28.2
 channels-redis == 4.0.0
 psycopg2 == 2.9.5
 strenum; python_version < '3.11'
