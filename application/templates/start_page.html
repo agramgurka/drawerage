@@ -15,15 +15,17 @@
         <p class="lead">Draw and guess game with your friends</p>
     </div>
     <div class="row justify-content-md-center">
-        <div class="col-md-4 p-4 p-md-5 border rounded-3 bg-light">
-            <form method="post">
+        <div class="col-md-4">
+            <form method="post" class="p-4 p-md-5 border rounded-3 bg-light">
                 {% csrf_token %}
                 {{ form.as_p }}
                 <div class="d-flex justify-content-between">
                     <input type="submit" class="btn btn-primary" value="Join"/>
-                    <a href="{% url 'create_game' %}" id="create_game" class="btn btn-success">Create New</a>
                 </div>
             </form>
+            <div class="d-md-flex justify-content-md-end mt-3">
+                <a href="{% url 'create_game' %}" id="create_game" class="btn btn-danger">Create New</a>
+            </div>
         </div>
     </div>
 </div>
