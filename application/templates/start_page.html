@@ -29,5 +29,19 @@
         </div>
     </div>
 </div>
+<script>
+    window.addEventListener('load', () => {
+      const nicknameEl = document.querySelector('#id_player_nickname');
+      const lastName = window.localStorage.getItem('lastName');
+      if (lastName) {
+        nicknameEl.value = lastName;
+      }
+      nicknameEl.addEventListener('blur', (e) => {
+        if (e.target.value) {
+          window.localStorage.setItem('lastName', e.target.value);
+        }
+      });
+    });
+</script>
 </body>
 </html>
