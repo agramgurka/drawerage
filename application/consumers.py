@@ -366,7 +366,10 @@ class Game(AsyncJsonWebsocketConsumer):
                                         }
                                     )
                                 else:
-                                    task_updates['task'] = variants[player.pk]
+                                    task_updates['task'] = {
+                                        'painting': game_round.painting.url if game_round.painting else None,
+                                        'variants': variants[player.pk],
+                                    }
                                     await self.channel_layer.send(
                                         player.channel_name,
                                         {

@@ -73,21 +73,27 @@ function initTaskScreen(taskType, task){
     }
     if (taskType === "selecting"){
         let selectingTask = document.getElementById("selecting-task");
-        selectingTask.classList.remove("invisible");
-        selectingTask.innerHTML = "";
+
+        const img = document.createElement('img');
+        img.src = task.painting;
+        const imgContainer = document.createElement('div')
+        imgContainer.append(img);
         const ul = document.createElement("ul");
         ul.classList.add("list-group");
-        for (let option in task) {
+        task.variants.forEach((option) => {
             let optionBlock = document.createElement("li");
-            optionBlock.innerHTML = task[option];
+            optionBlock.innerHTML = option;
             optionBlock.classList.add("option-block", "list-group-item");
             optionBlock.addEventListener("click", selectVariant);
             ul.append(optionBlock);
-        }
+        })
+        selectingTask.classList.remove("invisible");
+        selectingTask.innerHTML = "";
+        selectingTask.append(imgContainer);
         selectingTask.append(ul);
     }
     return screen;
-};
+}
 
 function initResultsScreen(results){
     let  screen = document.getElementById("results-screen");
