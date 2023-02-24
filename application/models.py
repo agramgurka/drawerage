@@ -73,3 +73,9 @@ class Task(models.Model):
     source = models.CharField(max_length=255, blank=True)
     up_vote = models.IntegerField(default=0)
     down_vote = models.IntegerField(default=0)
+
+
+class AutoAnswer(models.Model):
+    language = models.CharField(max_length=16)
+    text = models.TextField(unique=True)
+    source = models.CharField(max_length=255, blank=True)
