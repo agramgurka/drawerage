@@ -41,9 +41,13 @@ function initColorIcons() {
     secondaryColorBtn.addEventListener("click", selectColor);
 }
 
-function selectColor() {
-   if (this.id === "main-color") currentColor = mainColor;
-   if (this.id === "secondary-color") currentColor = secondaryColor;
+function selectColor(e) {
+	document.querySelectorAll('#colors-block button').forEach(
+		(el) => el.classList.remove('active')
+	);
+  e.target.classList.add('active');
+	if (this.id === "main-color") currentColor = mainColor;
+	if (this.id === "secondary-color") currentColor = secondaryColor;
 }
 
 // Variables for referencing the canvas and 2dcanvas context

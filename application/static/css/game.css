@@ -214,6 +214,9 @@
    -webkit-border-radius:50%;
    margin: 10px 15px;
 }
+.drawing-color-icon.active {
+   border: 5px solid;
+}
 
 #canvas-block {
     display: inline-flex;
