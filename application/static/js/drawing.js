@@ -27,7 +27,7 @@ pSBC.pSBCr=(d)=>{
 	}return x
 };
 
-var secondaryColor = pSBC(0.4, mainColor);
+var secondaryColor = pSBC(0.3, mainColor);
 var currentColor = mainColor;
 
 

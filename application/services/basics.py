@@ -1,6 +1,9 @@
+import os.path
 from enum import IntEnum
 import asyncio as aio
 import sys
+
+from Drawesome.settings import BASE_DIR
 
 if sys.version_info < (3, 11):
     from strenum import StrEnum
@@ -72,18 +75,12 @@ class MediaType(StrEnum):
     answer = 'answer'
 
 
-DRAWING_COLORS = [
-    '#4A466D',  # blue
-    '#99454D',  # red
-    '#69536D',  # purple
-    '#3F8F8D',  # green
-    '#855419',  # orange
-    '#877241',  # yellow
-    '#6E4C4E',  # pink
-    '#451e3e',  # dark purple
-    '#7d5d54',  # brown
-]
-
+colors_file = os.path.join(
+    BASE_DIR,
+    'application/services/assets/drawing_colors.txt'
+)
+with open(colors_file) as f:
+    DRAWING_COLORS = [color.strip('\n') for color in f]
 
 CODE_CHARS = [chr(ord('A') + x) for x in range(26)]
 GAME_CODE_LEN = 4
