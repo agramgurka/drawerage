@@ -246,8 +246,7 @@ function submitPainting() {
             "media_type": "painting",
             "media": painting
         })
-    })
-    .then((response) => console.log(response));
+    });
 }
 
 function selectVariant() {
@@ -300,11 +299,9 @@ function uploadMedia() {
     let drawingTask = document.getElementById("drawing-task");
 
     if (!writingTask.classList.contains("invisible")) {
-        console.log('uploads variant');
         submitVariant();
     }
     else if (!drawingTask.classList.contains("invisible")) {
-        console.log('uploads variant');
         submitPainting();
     }
 }

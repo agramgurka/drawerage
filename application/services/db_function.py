@@ -65,9 +65,9 @@ def pick_color(game_id: int) -> str:
     if Player.objects.filter(games=game_id, is_host=False).count() + 1 > len(DRAWING_COLORS):
         raise ValueError('number of players is greater than number of drawing colors')
     while True:
-        color = random.choices(DRAWING_COLORS, k=1)
-        if not Player.objects.filter(games=game_id, drawing_color=color):
-            return color.pop()
+        color = random.choices(DRAWING_COLORS, k=1).pop()
+        if not Player.objects.filter(games=game_id, drawing_color=color).exists():
+            return color
 
 
 def is_player(game_id: int, user: User) -> bool:
