@@ -271,27 +271,29 @@ function submitVariant(e) {
 
     const variant = document.getElementById("variant").value;
     let csrftoken = getCookie('csrftoken');
-    fetch(window.location.origin + "/upload/", {
-        method: "POST",
-        credentials: "same-origin",
-        headers: { "X-CSRFToken": csrftoken },
-        body: JSON.stringify({
-            "game_id": gameId,
-            "media_type": "variant",
-            "media": variant
+    if (variant && (variant.length > 5 || e)) {
+        fetch(window.location.origin + "/upload/", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: {"X-CSRFToken": csrftoken},
+            body: JSON.stringify({
+                "game_id": gameId,
+                "media_type": "variant",
+                "media": variant
+            })
         })
-    })
-    .then((response) => {
-        if (response.status !== 200) {
-            console.error(response);
-        }
-        return response.json();
-    })
-    .then((data) => {
-        if (data.status === 'duplicate') {
-            errorEl.innerHTML = "You variant is too close to someone's variant or to the correct answer";
-        }
-    });
+        .then((response) => {
+             if (response.status !== 200) {
+                console.error(response);
+             }
+            return response.json();
+        })
+        .then((data) => {
+            if (data.status === 'duplicate' && !!e) {
+                errorEl.innerHTML = "You variant is too close to someone's variant or to the correct answer";
+            }
+        });
+    }
 }
 
 function uploadMedia() {
