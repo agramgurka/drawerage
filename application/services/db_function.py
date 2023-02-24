@@ -12,6 +12,7 @@ from django.http import HttpRequest
 from django.core.files.base import ContentFile
 
 from ..models import Player, Game, Round, Variant, Result
+from .auto_answers import get_auto_answers
 from .basics import (DRAWING_COLORS,
                      GameRole, GameStage, RoundStage,
                      POINTS_FOR_CORRECT_ANSWER,
@@ -256,8 +257,8 @@ def get_drawing_task(game_id: int, player: Player) -> str:
     ).first().painting_task
 
 
-def get_variants(game_round: Round) -> list[tuple[str, int]]:
-    """ returns players' variants for a round """
+def get_variants(game_round: Round) -> list[tuple[str, int | None]]:
+    """ returns players' and auto generated variants for a round """
 
     return list(Variant.objects.filter(
         game_round=game_round,
@@ -485,3 +486,19 @@ def get_players_answers(game_round: Round):
                 'selected_by': [player.avatar.url for player in variant.selected_by.all()]
             })
     return answers
+
+
+def populate_missing_variants(game_round: Round):
+    player_variants_num = game_round.round_variants.count()
+    players_number = game_round.game.players.exclude(is_host=True).count()
+    missing_answers = players_number - player_variants_num
+    logger.info(f'generate {missing_answers} auto answers')
+    if missing_answers:
+        Variant.objects.bulk_create([
+            Variant(
+                game_round=game_round,
+                text=auto_answer.strip().lower(),
+                author=None,
+            )
+            for auto_answer in get_auto_answers('ru', missing_answers)
+        ])

@@ -15,7 +15,7 @@ from .services.db_function import (
     next_stage, get_players, get_role, get_variants, get_game_code,
     get_results, register_channel, create_rounds, calculate_results, stage_completed,
     create_results, is_game_paused, switch_pause_state, get_players_answers,
-    get_finished_players)
+    get_finished_players, populate_missing_variants)
 
 logger = setup_logger(__name__)
 
@@ -146,6 +146,7 @@ class Game(AsyncJsonWebsocketConsumer):
                             logger.info('start writing')
                             await self.process_stage(GameStage.round, RoundStage.writing)
                         if game_round.stage == RoundStage.selecting:
+                            await to_async(populate_missing_variants)(game_round)
                             logger.info('start selecting')
                             await self.process_stage(GameStage.round, RoundStage.selecting)
                         if game_round.stage == RoundStage.answers:
