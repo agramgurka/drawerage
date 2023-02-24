@@ -3,6 +3,8 @@ import random
 from functools import lru_cache
 from typing import Optional
 
+from more_itertools import distinct_combinations
+
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.db.models import F, Count, Q
@@ -62,10 +64,21 @@ def create_player(game_id: int, user: User, nickname: str = None, is_host: bool 
 
 
 def pick_color(game_id: int) -> str:
-    if Player.objects.filter(games=game_id, is_host=False).count() + 1 > len(DRAWING_COLORS):
-        raise ValueError('number of players is greater than number of drawing colors')
+    all_colors = [x.lower() for x in DRAWING_COLORS]
+    random.shuffle(all_colors)
+    mixer_stage = 1
     while True:
-        color = random.choices(DRAWING_COLORS, k=1).pop()
+        if not all_colors:
+            mixer_stage += 1
+            if mixer_stage > len(DRAWING_COLORS):
+                raise ValueError('number of players is greater than number of drawing colors')
+
+            all_colors = [
+                '#' + hex(sum((int(x[1:], 16) for x in colors)) // mixer_stage)
+                for colors in distinct_combinations(DRAWING_COLORS, mixer_stage)
+            ]
+            random.shuffle(all_colors)
+        color = all_colors.pop()
         if not Player.objects.filter(games=game_id, drawing_color=color).exists():
             return color
 
