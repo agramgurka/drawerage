@@ -266,7 +266,7 @@ function selectVariant() {
 };
 
 function submitVariant(e) {
-    e.preventDefault();
+    if (e) {e.preventDefault();}
     const errorEl = document.querySelector('#variant-form .validation-error');
     errorEl.innerHTML = '';
 
@@ -300,9 +300,11 @@ function uploadMedia() {
     let drawingTask = document.getElementById("drawing-task");
 
     if (!writingTask.classList.contains("invisible")) {
+        console.log('uploads variant');
         submitVariant();
     }
     else if (!drawingTask.classList.contains("invisible")) {
+        console.log('uploads variant');
         submitPainting();
     }
 }
