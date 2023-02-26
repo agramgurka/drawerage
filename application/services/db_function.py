@@ -107,9 +107,11 @@ def get_active_game(user: User) -> Optional[int]:
     """ returns id of player's/host's active game, if it exists"""
 
     if user.is_authenticated:
-        active_games = Game.objects.filter(players__user=user).exclude(stage=GameStage.finished)
-        if active_games:
-            return active_games.first().pk
+        active_game = Game.objects.filter(players__user=user).exclude(
+            stage=GameStage.finished,
+        ).only('pk').order_by('-pk').first()
+        if active_game:
+            return active_game.pk
     return None
 
 

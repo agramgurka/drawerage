@@ -26,7 +26,7 @@ class StartPage(FormView):
     def get(self, request, *args, **kwargs):
         active_game = get_active_game(request.user)
         if active_game:
-            return redirect(reverse('game', args=[active_game]))
+            return redirect(reverse('game'))
         return super().get(request, *args, **kwargs)
 
     def form_valid(self, form):
@@ -39,22 +39,23 @@ class StartPage(FormView):
             return super().form_invalid(form)
 
     def get_success_url(self):
-        return reverse('game', args=[self.game_id])
+        return reverse('game')
 
 
 class CreateGame(View):
     def get(self, request):
-        game_id = create_game(request)
-        return redirect(reverse('game', args=[game_id]))
+        create_game(request)
+        return redirect(reverse('game'))
 
 
 class Game(View):
-    def get(self, request, pk):
-        game_stage = get_game_stage(pk)
-        if game_stage == GameStage.finished or not is_player(pk, request.user):
+    def get(self, request):
+        game_id = get_active_game(request.user)
+        game_stage = get_game_stage(game_id)
+        if game_stage == GameStage.finished or not is_player(game_id, request.user):
             return redirect('start_page')
-        drawing_color = get_player_color(pk, request.user)
-        return render(request, 'game.html', {'game_id': pk, 'drawing_color': drawing_color})
+        drawing_color = get_player_color(game_id, request.user)
+        return render(request, 'game.html', {'game_id': game_id, 'drawing_color': drawing_color})
 
 
 class MediaUpload(View):
