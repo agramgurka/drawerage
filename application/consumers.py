@@ -3,6 +3,7 @@ from random import shuffle
 from typing import Optional
 
 from channels.db import database_sync_to_async as to_async
+from channels.exceptions import ChannelFull
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
@@ -48,6 +49,12 @@ class Game(AsyncJsonWebsocketConsumer):
         else:
             await self.close()
             logger.info('connection declined')
+            
+    async def channel_send(self, channel_name, data):
+        try:
+            return await self.channel_layer.send(channel_name, data)
+        except ChannelFull:
+            logger.exception('Channel is FULL')
 
     async def disconnect(self, code):
         logger.info('disconnection begins')
@@ -249,7 +256,7 @@ class Game(AsyncJsonWebsocketConsumer):
 
                         for player in players:
                             if player.avatar or player.is_host:
-                                await self.channel_layer.send(
+                                await self.channel_send(
                                     player.channel_name,
                                     {
                                         'type': 'send.update',
@@ -257,7 +264,7 @@ class Game(AsyncJsonWebsocketConsumer):
                                     }
                                 )
                             elif player.channel_name:
-                                await self.channel_layer.send(
+                                await self.channel_send(
                                     player.channel_name,
                                     {
                                         'type': 'send.update',
@@ -279,7 +286,7 @@ class Game(AsyncJsonWebsocketConsumer):
                                     player.pk in finished_players
                         for player in players:
                             if player.is_host or status_updates['players'][player.nickname]['finished']:
-                                await self.channel_layer.send(
+                                await self.channel_send(
                                     player.channel_name,
                                     {
                                         'type': 'send.update',
@@ -288,7 +295,7 @@ class Game(AsyncJsonWebsocketConsumer):
                                 )
                             else:
                                 task_updates['task'] = drawing_tasks[player.pk]
-                                await self.channel_layer.send(
+                                await self.channel_send(
                                     player.channel_name,
                                     {
                                         'type': 'send.update',
@@ -320,7 +327,7 @@ class Game(AsyncJsonWebsocketConsumer):
                                         player.pk in finished_players
                             for player in players:
                                 if player.is_host or status_updates['players'][player.nickname]['finished']:
-                                    await self.channel_layer.send(
+                                    await self.channel_send(
                                         player.channel_name,
                                         {
                                             'type': 'send.update',
@@ -328,7 +335,7 @@ class Game(AsyncJsonWebsocketConsumer):
                                         }
                                     )
                                 else:
-                                    await self.channel_layer.send(
+                                    await self.channel_send(
                                         player.channel_name,
                                         {
                                             'type': 'send.update',
@@ -358,7 +365,7 @@ class Game(AsyncJsonWebsocketConsumer):
 
                             for player in players:
                                 if player.is_host or status_updates['players'][player.nickname]['finished']:
-                                    await self.channel_layer.send(
+                                    await self.channel_send(
                                         player.channel_name,
                                         {
                                             'type': 'send.update',
@@ -370,7 +377,7 @@ class Game(AsyncJsonWebsocketConsumer):
                                         'painting': game_round.painting.url if game_round.painting else None,
                                         'variants': variants[player.pk],
                                     }
-                                    await self.channel_layer.send(
+                                    await self.channel_send(
                                         player.channel_name,
                                         {
                                             'type': 'send.update',
