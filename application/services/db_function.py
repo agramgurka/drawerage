@@ -274,7 +274,9 @@ def get_variants(game_round: Round) -> list[tuple[str, int | None]]:
 def get_results(game: Game):
     """ returns game's results """
 
-    return list(Result.objects.filter(game=game).values('player__nickname', 'result', 'round_increment'))
+    return list(Result.objects.filter(game=game).values(
+        'player__nickname', 'player__avatar', 'player__drawing_color', 'result', 'round_increment'
+    ))
 
 
 def next_stage(game_id: int):
