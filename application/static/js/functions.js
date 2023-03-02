@@ -95,28 +95,7 @@ function initTaskScreen(taskType, task){
     return screen;
 }
 
-function initResultsScreen(results){
-    let  screen = document.getElementById("results-screen");
-    screen.innerHTML = "";
-    for (let i in results) {
-        let resultBlock = document.createElement("div");
-        resultBlock.classList.add("result-block", "shadow-sm", "p-3", "mb-1", "bg-body", "rounded");
-        let resultName = document.createElement("div");
-        resultName.innerHTML = results[i].player__nickname;
-        resultName.classList.add("result-name");
-        let result = document.createElement("div");
-        result.innerHTML = results[i].result;
-        result.classList.add("result");
-        let increment = document.createElement("div");
-        increment.innerHTML = "+" + results[i].round_increment;
-        increment.classList.add("increment");
-        resultBlock.appendChild(resultName);
-        resultBlock.appendChild(result);
-        resultBlock.appendChild(increment);
-        screen.appendChild(resultBlock);
-    }
-    return screen;
-};
+
 
 function initAnswersScreen(variants) {
     const screen = document.getElementById("answers-screen");
