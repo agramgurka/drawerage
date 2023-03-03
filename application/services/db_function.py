@@ -10,6 +10,7 @@ from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.db.models import F, Count, Q
 from django.http import HttpRequest
 from django.core.files.base import ContentFile
+from thefuzz import fuzz
 
 from ..models import Player, Game, Round, Variant, Result
 from .auto_answers import get_auto_answers
@@ -23,6 +24,9 @@ from .tasks import BaseTaskProducer, PredefinedTaskProducer, Restriction, Ruslan
 from .utils import setup_logger
 
 logger = setup_logger(__name__)
+
+
+MIN_SIMILARITY_RANK = 92
 
 
 def generate_game_code(code_len=GAME_CODE_LEN) -> str:
@@ -358,19 +362,16 @@ def apply_variant(game_id: int, user: User, variant: str) -> None:
     game_round = get_current_round(game_id)
     player = Player.objects.get(games=game_id, user=user)
     logger.info(f'{player.nickname} uploads painting')
-    variant = variant.strip()
+    variant = variant.strip().lower()[:100]
     if not Variant.objects.filter(game_round=game_round, author=player).exists():
-        if (
-            Variant.objects.filter(game_round=game_round, text__icontains=variant).exists() or
-            (
-                variant.lower() in game_round.painting_task.lower() and
-                0.8 < len(variant) / len(game_round.painting_task) < 1.2
-            )
-        ):
-            # TODO: use stemming to identify similar phrases
-            raise ValidationError('Variant is similar to existing variants')
+        existing_variants = Variant.objects.filter(game_round=game_round).values_list('text', flat=True)
+        for v in existing_variants:
+            ratio = fuzz.ratio(variant, v)
+            logger.debug(f'Compare "{variant}" with "{v}": ratio is {ratio}')
+            if ratio >= MIN_SIMILARITY_RANK:
+                raise ValidationError('Variant is similar to existing variants')
         Variant.objects.create(
-            text=variant.lower()[:100],
+            text=variant,
             game_round=game_round,
             author=player
         )
