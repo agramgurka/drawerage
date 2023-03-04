@@ -48,6 +48,7 @@ class GameScreens(StrEnum):
     results = 'results'
     pause = 'pause'
     answers = 'answers'
+    final_standings = 'final_standings'
 
 
 class TaskType(StrEnum):

@@ -35,6 +35,9 @@ ws.onmessage = function(response) {
         if (activeScreen == "answers") {
             screen = initAnswersScreen(res.variants);
         }
+        if (activeScreen == "final_standings") {
+            screen = initFinalStandingsScreen(res.results);
+        }
         displayScreen(screen);
     }
     if (command == "display_answer") {
@@ -48,9 +51,11 @@ ws.onmessage = function(response) {
     }
     if (command == "state") {
         if (res.stage) {
-            let enabledButtons = ["cancel-game", "resume-game"];
-            if (res.stage == "pregame") enabledButtons.push("start-game");
-            else if (res.stage != "finished") enabledButtons.push("pause-game");
+            let enabledButtons = [];
+            if (res.stage == "pregame") enabledButtons = ["start-game"];
+            else if (res.stage != "finished") enabledButtons = ["cancel-game", "resume-game", "pause-game"];
+            else enabledButtons = ["restart-game"];
+            console.log(enabledButtons);
             displayButtons(enabledButtons);
         }
         if (res.game_code) displayGameCode(res.game_code);

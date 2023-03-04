@@ -51,8 +51,7 @@ class CreateGame(View):
 class Game(View):
     def get(self, request):
         game_id = get_active_game(request.user)
-        game_stage = get_game_stage(game_id)
-        if game_stage == GameStage.finished or not is_player(game_id, request.user):
+        if not is_player(game_id, request.user):
             return redirect('start_page')
         drawing_color = get_player_color(game_id, request.user)
         return render(request, 'game.html', {'game_id': game_id, 'drawing_color': drawing_color})

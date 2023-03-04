@@ -61,13 +61,14 @@ class Game(AsyncJsonWebsocketConsumer):
 
         if self.game_role == GameRole.host:
             await self.cancel_tasks()
-            await self.channel_layer.group_send(
-                self.global_group,
-                {
-                    'type': 'game.paused',
-                    'text': 'Host is disconnected'
-                }
-            )
+            if await to_async(get_game_stage)(self.game_id) != GameStage.finished:
+                await self.channel_layer.group_send(
+                    self.global_group,
+                    {
+                        'type': 'game.paused',
+                        'text': 'Host is disconnected'
+                    }
+                )
         await self.channel_layer.group_discard(
             self.global_group, self.channel_name
         )
@@ -79,10 +80,10 @@ class Game(AsyncJsonWebsocketConsumer):
 
         if command == 'connected':
             await self.send_game_state()
+            game_stage = await to_async(get_game_stage)(self.game_id)
             if self.game_role == GameRole.host:
                 self.update_task = aio.create_task(self.broadcast_game_updates())
                 self.update_task.add_done_callback(display_task_result)
-                game_stage = await to_async(get_game_stage)(self.game_id)
                 if game_stage not in [GameStage.pregame, GameStage.finished]:
                     self.game_task = aio.create_task(self.process_game())
                     self.game_task.add_done_callback(display_task_result)
@@ -93,6 +94,9 @@ class Game(AsyncJsonWebsocketConsumer):
                             'type': 'game.resumed'
                         }
                     )
+            if self.game_role == GameRole.player and game_stage == GameStage.finished:
+                await self.send_standings({})
+
         if self.game_role == GameRole.host:
             if command == 'start':
                 await to_async(create_rounds)(self.game_id)
@@ -240,7 +244,18 @@ class Game(AsyncJsonWebsocketConsumer):
                         drawing_tasks = {}
 
                     if game_stage == GameStage.finished:
-                        break
+                        if not results:
+                            results = await to_async(get_results)(self.game_id)
+                        result_updates['active_screen'] = GameScreens.final_standings
+                        result_updates['results'] = results
+
+                        await self.channel_layer.group_send(
+                            self.global_group,
+                            {
+                                'type': 'send.standings',
+                                'updates': result_updates
+                            }
+                        )
 
                     elif game_stage == GameStage.pregame:
                         status_updates['task_type'] = TaskType.drawing
@@ -496,3 +511,12 @@ class Game(AsyncJsonWebsocketConsumer):
             'variant': event['variant'],
             'is_correct': event['is_correct']
         })
+
+    async def send_standings(self, event):
+        result_updates = event.get('updates')
+        if not result_updates:
+            result_updates = {
+                'active_screen': GameScreens.final_standings,
+                'results': await to_async(get_results)(self.game_id)
+            }
+        await self.send_update(result_updates)

@@ -96,6 +96,66 @@ function initTaskScreen(taskType, task){
 }
 
 
+function initFinalStandingsScreen(standings) {
+    let PlayerCard = null
+    let PlaceCardAvatar = null;
+    let PlaceCardScore = null;
+    const scoreTable = document.querySelector("#final-standings tbody");
+    scoreTable.innerHTML = "";
+
+    for (let i in standings) {
+        if (i < 3) {
+            if (i == 0) {
+               PlayerCard = document.querySelector("#first-place-card");
+               PlaceCardAvatar = document.querySelector("#first-place-card .player-card-img");
+               PlaceCardScore = document.querySelector("#first-place-card .player-card-text");
+            }
+            if (i == 1) {
+                 PlayerCard = document.querySelector("#second-place-card");
+                 PlaceCardAvatar = document.querySelector("#second-place-card .player-card-img");
+                 PlaceCardScore = document.querySelector("#second-place-card .player-card-text");
+            }
+            if (i == 2) {
+                 PlayerCard = document.querySelector("#third-place-card");
+                 PlaceCardAvatar = document.querySelector("#third-place-card .player-card-img");
+                 PlaceCardScore = document.querySelector("#third-place-card .player-card-text");
+            }
+            PlaceCardAvatar.src = '/media/' + standings[i].player__avatar;
+            PlaceCardScore.innerHTML = standings[i].result;
+            PlayerCard.style.borderColor = standings[i].player__drawing_color;
+            PlayerCard.classList.remove('invisible');
+        }
+
+        let newRow = document.createElement("tr");
+        let place = document.createElement("td");
+        let player = document.createElement("td");
+        let avatar = document.createElement("img");
+        let nickname = document.createElement("p");
+        let score = document.createElement("td");
+
+        place.innerHTML = parseInt(i) + 1;
+        avatar.src = '/media/' + standings[i].player__avatar;
+        nickname.innerHTML = standings[i].player__nickname;
+        score.innerHTML = standings[i].result;
+
+
+        player.classList.add("d-flex", "align-items-center", "justify-content-center");
+        avatar.classList.add("rounded-circle", "mx-2");
+        avatar.style.width = "45px";
+        avatar.style.height = "45px";
+        nickname.classList.add("fw-bold");
+
+        player.appendChild(avatar);
+        player.appendChild(nickname);
+        newRow.appendChild(place);
+        newRow.appendChild(player);
+        newRow.appendChild(score);
+        scoreTable.appendChild(newRow);
+    }
+    const screen = document.getElementById("final-standings");
+    return screen;
+}
+
 
 function initAnswersScreen(variants) {
     const screen = document.getElementById("answers-screen");
