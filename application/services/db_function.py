@@ -484,16 +484,18 @@ def get_players_answers(game_round: Round):
         ~Q(selected_by=None) | Q(author=game_round.painter),
         game_round=game_round)
     for variant in variants:
+        answer = {
+            'text': variant.text,
+            'author': {
+                'nickname': variant.author.nickname,
+                'avatar': variant.author.avatar.url
+            },
+            'selected_by': [player.avatar.url for player in variant.selected_by.all()]
+        }
         if variant.author == game_round.painter:
-            answers['correct'] = {
-                'text': variant.text,
-                'selected_by': [player.avatar.url for player in variant.selected_by.all()]
-            }
+            answers['correct'] = answer
         else:
-            answers['incorrect'].append({
-                'text': variant.text,
-                'selected_by': [player.avatar.url for player in variant.selected_by.all()]
-            })
+            answers['incorrect'].append(answer)
     return answers
 
 
