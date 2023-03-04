@@ -40,12 +40,13 @@ function initResultsScreen(results) {
                 data: pointsBefore,
                 backgroundColor: backgroundColorsBefore,
                 borderRadius: 15,
-                //minBarLength: 50,
                 datalabels: {
                     labels: {
                         value: {
-                            font: {size: 20},
-                            align: 'end',
+                            font: {size: 18},
+                            align: function(value, context) {
+                                return value > 0 ? 'start' : 'end';
+                            },
                             anchor: 'end',
                             color: 'black'
                         },
@@ -57,7 +58,7 @@ function initResultsScreen(results) {
                                        ? context.dataset.labels[context.dataIndex]
                                        : labelsBefore[context.dataIndex];
                             },
-                            font: {size: 24},
+                            font: {size: 20},
                             color: 'black',
                         }
                     },
@@ -72,8 +73,8 @@ function initResultsScreen(results) {
                     labels: {
                         increment: {
                                 font: {size: 18},
-                                align: 'center',
-                                anchor: 'center',
+                                align: 'end',
+                                anchor: 'end',
                                 color: 'green',
                                 backgroundColor: 'white',
                                 borderRadius: 15,
@@ -119,7 +120,7 @@ function initResultsScreen(results) {
         },
         layout: {
             padding: {
-                left: 150,
+                left: 100,
                 right: 100,
                 top: 50,
                 bottom: 50

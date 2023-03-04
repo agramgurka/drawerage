@@ -242,3 +242,81 @@
     display: flex;
     justify-content: center;
 }
+
+.player-card {
+   position:relative;
+   margin: 15px;
+   border-radius: 15px;
+   border: 2px solid;
+
+ box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
+}
+
+.player-card-img {
+    width: 100%;
+}
+
+.player-card-title {
+    text-align: center;
+}
+
+.player-card-text {
+    text-align: center;
+    font-weight: bold;
+}
+
+.place-badge {
+    position: absolute;
+    right:-20px;
+    top: -20px;
+    text-align: center;
+    border-radius: 30px 30px 30px 30px;
+    border: 1px solid;
+    color:white;
+    padding:5px 10px;
+    font-size:25px;
+}
+
+.first-place-badge {
+   background: #EEE8AA;
+}
+
+.second-place-badge {
+   background: #C0C0C0;
+}
+
+.third-place-badge {
+   background: #a17652;
+}
+
+#first-place-card {
+    width: 35%;
+}
+
+#second-place-card {
+    width: 30%;
+}
+
+#third-place-card {
+    width: 25%;
+}
+
+
+#final-standing-table td {
+    vertical-align: middle;
+    text-align: center
+}
+
+#final-standing-table th {
+    vertical-align: middle;
+    text-align: center
+}
+
+#timer {
+    text-align: center;
+    font-size: 25px;
+    border: 2px solid;
+    border-radius: 15px;
+    padding: 15px;
+    margin: 5px;
+}

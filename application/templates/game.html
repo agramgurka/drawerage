@@ -15,16 +15,19 @@
 <body>
 <div id="pause-popup" class="invisible text-center p-5">
         <h1 id="pause-text">GAME IS PAUSED</h1>
-        <button id="resume-game" type="button" class="btn btn-secondary invisible control-btn"> Resume </button>
+        <button id="resume-game" type="button" class="btn btn-secondary control-btn invisible"> Resume </button>
 </div>
 <div class="container">
     <div class="row justify-content-center">
         <h1 class="col-sm-2" id="game-code"></h1>
     </div>
-     <div id="timer" class="row invisible"></div>
-
+     <button id="start-game" type="button" class="btn btn-secondary invisible control-btn"> Start </button>
+     <button id="pause-game" type="button" class="btn btn-secondary invisible control-btn"> Pause </button>
+     <button id="cancel-game" type="button" class="btn btn-secondary invisible control-btn"> Cancel </button>
+     <div class="row justify-content-center">
+         <div id="timer" class="invisible col-2 col-sm-1"></div>
+     </div>
      <div id="status-screen" class="game-screen invisible row justify-content-around"></div>
-
      <div id="task-screen" class="game-screen invisible row justify-content-center">
          <div id="drawing-task" class="task-type invisible col-md-6">
                   <div class="drawing-canvas-block">
@@ -71,11 +74,46 @@
              <canvas id="results-canvas"></canvas>
          </div>
      </div>
-
-     <button id="start-game" type="button" class="btn btn-secondary invisible control-btn"> Start </button>
-     <button id="pause-game" type="button" class="btn btn-secondary invisible control-btn"> Pause </button>
-     <button id="cancel-game" type="button" class="btn btn-secondary invisible control-btn"> Cancel </button>
-
+     <div id="final-standings" class="game-screen justify-content-center row invisible">
+         <div class="col-md-6">
+             <a id="main-menu-btn" role="button" class="btn btn-secondary" href="/">Main page</a>
+             <button id="restart-game" type="button" class="btn btn-secondary invisible control-btn"> Play again </button>
+             <div id="winners" class="d-flex justify-content-center align-items-end">
+                 <div id="second-place-card" class="player-card invisible">
+                     <span class="place-badge second-place-badge">#2</span>
+                     <img class="player-card-img" src="" alt="Player avatar">
+                         <div class="player-card-body">
+                           <p class="player-card-text"></p>
+                         </div>
+                 </div>
+                 <div id="first-place-card" class="player-card invisible">
+                     <span class="place-badge first-place-badge">#1</span>
+                     <img class="player-card-img" src="" alt="Player avatar">
+                         <div class="player-card-body">
+                           <p class="player-card-text"></p>
+                         </div>
+                 </div>
+                 <div id="third-place-card" class="player-card invisible">
+                     <span class="place-badge third-place-badge">#3</span>
+                     <img class="player-card-img" src="" alt="Player avatar">
+                         <div class="player-card-body">
+                           <p class="player-card-text"></p>
+                         </div>
+                 </div>
+             </div>
+             <table id="final-standing-table" class="table align-middle mb-0 bg-white">
+                 <thead class="bg-light">
+                    <tr>
+                      <th>#</th>
+                      <th>Player</th>
+                      <th>Score</th>
+                    </tr>
+                 </thead>
+                 <tbody>
+                 </tbody>
+             </table>
+         </div>
+     </div>
 </div>
 <script>
     const gameId = {{game_id}};
