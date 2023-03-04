@@ -311,12 +311,3 @@
     vertical-align: middle;
     text-align: center
 }
-
-#timer {
-    text-align: center;
-    font-size: 25px;
-    border: 2px solid;
-    border-radius: 15px;
-    padding: 15px;
-    margin: 5px;
-}

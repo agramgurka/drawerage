@@ -55,13 +55,12 @@ ws.onmessage = function(response) {
             if (res.stage == "pregame") enabledButtons = ["start-game"];
             else if (res.stage != "finished") enabledButtons = ["cancel-game", "resume-game", "pause-game"];
             else enabledButtons = ["restart-game"];
-            console.log(enabledButtons);
             displayButtons(enabledButtons);
         }
         if (res.game_code) displayGameCode(res.game_code);
         if (res.is_paused) displayPausePopup();
     }
     if (command == "timer") {
-        setTimer(res.time);
+        setTimer(res.initial, res.left);
     }
 };

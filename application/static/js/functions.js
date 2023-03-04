@@ -160,7 +160,6 @@ function initFinalStandingsScreen(standings) {
 function initAnswersScreen(variants) {
     const screen = document.getElementById("answers-screen");
     const variantsBlock = document.getElementById("variants-block");
-    setTimer(0);
     variantsBlock.innerHTML = "";
     for (let i in variants) {
         let variant = document.createElement("div");
@@ -263,18 +262,6 @@ function hidePausePopup() {
     const pausePopup = document.getElementById("pause-popup");
     if (!pausePopup.classList.contains("invisible")) {
          pausePopup.classList.add("invisible");
-    }
-}
-
-function setTimer(time) {
-    let timer = document.getElementById("timer");
-    if (timer.classList.contains("invisible")) {
-        timer.classList.remove("invisible");
-    }
-    timer.innerHTML = time;
-    if (time === 0) {
-        timer.classList.add("invisible");
-        uploadMedia();
     }
 }
 

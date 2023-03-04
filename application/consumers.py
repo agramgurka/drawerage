@@ -190,11 +190,11 @@ class Game(AsyncJsonWebsocketConsumer):
         timer = Timer(int(stage_time / settings.GAME_SPEED))
         while not timer.exceed:
             if not self.paused:
-                await self.broadcast_timer_update(timer.time)
-                await timer.tick()
                 if await to_async(stage_completed)(self.game_id, game_stage, round_stage):
                     timer.time = -1
                     logger.info('stage is completed before time exceeds')
+                await self.broadcast_timer_update(stage_time, timer.time)
+                await timer.tick()
             else:
                 await aio.sleep(1)
         if game_stage == GameStage.preround or round_stage == RoundStage.writing:
@@ -439,13 +439,14 @@ class Game(AsyncJsonWebsocketConsumer):
             )
             self.previous_update = event
 
-    async def broadcast_timer_update(self, time: int):
+    async def broadcast_timer_update(self, initial_time: int, time_left: int):
         await self.channel_layer.group_send(
             self.global_group,
             {
                 'type': 'send.timer',
                 'command': 'timer',
-                'time': time
+                'initial': initial_time,
+                'left': time_left
             }
         )
 
