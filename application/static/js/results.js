@@ -44,9 +44,7 @@ function initResultsScreen(results) {
                     labels: {
                         value: {
                             font: {size: 18},
-                            align: function(value, context) {
-                                return value > 0 ? 'start' : 'end';
-                            },
+                            align: 'end',
                             anchor: 'end',
                             color: 'black'
                         },
@@ -135,13 +133,19 @@ function initResultsScreen(results) {
     };
 
     let resultsChart = new Chart(ctx, config);
-    setTimeout(function(){resultsChart.data.datasets[1].data = increments; resultsChart.update();}, 1500);
     setTimeout(
-        function(){
+        function() {
+        resultsChart.data.datasets[1].data = increments;
+        resultsChart.data.datasets[0].datalabels.labels.value.display = false;
+        resultsChart.update();
+        }, 1500);
+    setTimeout(
+        function() {
             resultsChart.data.datasets.pop();
             resultsChart.data.datasets[0].data = pointsAfter;
             resultsChart.data.datasets[0].labels = labelsAfter;
             resultsChart.data.datasets[0].backgroundColor = backgroundColorsAfter;
+            resultsChart.data.datasets[0].datalabels.labels.value.display = true;
             if (JSON.stringify(resultsBefore) === JSON.stringify(resultsAfter)) resultsChart.update('none');
             else resultsChart.update();
         }, 3000);
