@@ -513,3 +513,7 @@ def populate_missing_variants(game_round: Round):
             )
             for auto_answer in get_auto_answers('ru', missing_answers)
         ])
+
+
+def is_host(game_id: int, user: User) -> bool:
+    return Player.objects.filter(games=game_id, user=user, is_host=True).exists()

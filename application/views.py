@@ -8,9 +8,9 @@ from django.views.generic import FormView
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned, ValidationError
 
 from .services.db_function import (join_game, create_game, get_active_game,
-                                   upload_avatar, upload_painting,
+                                   upload_avatar, upload_painting, get_game_code,
                                    apply_variant, select_variant, get_game_stage,
-                                   get_player_color, is_player)
+                                   get_player_color, is_player, is_host)
 from .services.basics import MediaType, GameStage
 from .services.utils import setup_logger
 from .forms import JoinGameForm
@@ -54,7 +54,10 @@ class Game(View):
         if not is_player(game_id, request.user):
             return redirect('start_page')
         drawing_color = get_player_color(game_id, request.user)
-        return render(request, 'game.html', {'game_id': game_id, 'drawing_color': drawing_color})
+        context = {'game_id': game_id, 'drawing_color': drawing_color}
+        if is_host(game_id, request.user):
+            context['game_code'] = get_game_code(game_id)
+        return render(request, 'game.html', context)
 
 
 class MediaUpload(View):

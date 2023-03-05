@@ -1,0 +1,3 @@
+if (gameCode) {
+    displayGameCode(gameCode);
+}
