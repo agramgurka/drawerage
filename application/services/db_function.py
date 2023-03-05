@@ -308,7 +308,14 @@ def next_stage(game_id: int):
             game_round.stage = RoundStage.answers
             game_round.save()
         elif game_round.stage == RoundStage.answers:
-            game_round.stage = RoundStage.results
+            next_round_number = Round.objects.filter(game=game_id, stage=RoundStage.finished).count() + 1
+            players_cnt = len(get_players(game_id, host=False))
+            if next_round_number >= players_cnt * game.cycles:
+                game_round.stage = RoundStage.finished
+                game.stage = GameStage.finished
+                game.save()
+            else:
+                game_round.stage = RoundStage.results
             game_round.save()
         elif game_round.stage == RoundStage.results:
             game_round.stage = RoundStage.finished
@@ -320,10 +327,7 @@ def next_stage(game_id: int):
                 next_round.stage = RoundStage.writing
                 next_round.save()
             else:
-                if next_round_number >= players_cnt * game.cycles:
-                    game.stage = GameStage.finished
-                else:
-                    game.stage = GameStage.preround
+                game.stage = GameStage.preround
                 game.save()
         logger.debug(f'round stage after: {game_round.stage}')
     logger.debug(f'game stage after: {game.stage}')
