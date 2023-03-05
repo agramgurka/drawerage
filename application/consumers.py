@@ -503,8 +503,10 @@ class Game(AsyncJsonWebsocketConsumer):
                         'is_correct': is_correct
                     }
                 )
-
-                await aio.sleep(StageTime.for_one_select.value + len(variant['selected_by']))
+                time_for_selects = len(variant['selected_by']) or 1
+                await aio.sleep(StageTime.for_one_answer.value + time_for_selects)
+            else:
+                await aio.sleep(1)
 
     async def display_answer(self, event):
         await self.send_json({

@@ -157,64 +157,6 @@ function initFinalStandingsScreen(standings) {
 }
 
 
-function initAnswersScreen(variants) {
-    const screen = document.getElementById("answers-screen");
-    const variantsBlock = document.getElementById("variants-block");
-    variantsBlock.innerHTML = "";
-    for (let i in variants) {
-        let variant = document.createElement("div");
-        variant.innerHTML = variants[i];
-        variantsBlock.append(variant);
-    }
-    const variantText = document.getElementById("variant-text");
-    variantText.innerHTML = "";
-    const variantSelects = document.getElementById("variant-selects");
-    variantSelects.innerHTML = "";
-    const variantDetails = document.getElementById("variant-details");
-    variantDetails.classList.remove('incorrect-answer');
-    variantDetails.classList.remove('correct-answer');
-    return screen;
-}
-
-function displayAnswer(answer, isCorrect) {
-    let variantDetails = document.getElementById("variant-details");
-    variantDetails.classList.remove('incorrect-answer');
-    variantDetails.classList.remove('correct-answer');
-    const variantText = document.getElementById("variant-text");
-    variantText.innerHTML = answer.text;
-    const variantSelects = document.getElementById("variant-selects");
-    variantSelects.innerHTML = ""
-    if (answer.selected_by.length) {
-        for (let i in answer.selected_by) {
-            delay = 1000 * (parseInt(i) + 1);
-            setTimeout(displaySelectedBy, delay, variantSelects, answer.selected_by[i]);
-            if (i == answer.selected_by.length - 1)
-            setTimeout(displayCorrectness, delay + 1000, isCorrect);
-        }
-    }
-    else
-        setTimeout(displayCorrectness, 1000, isCorrect);
-}
-
-function displayCorrectness(isCorrect) {
-    let variantDetails = document.getElementById("variant-details");
-    if (isCorrect) {
-        variantDetails.classList.add("correct-answer");
-        variantDetails.classList.remove("incorrect-answer");
-    }
-    else {
-        variantDetails.classList.remove("correct-answer");
-        variantDetails.classList.add("incorrect-answer");
-    }
-}
-
-function displaySelectedBy(variant, player) {
-        let playerImg = document.createElement('img');
-        playerImg.classList.add('selected-by-icon');
-        playerImg.src = player;
-        variant.appendChild(playerImg);
-}
-
 function displayScreen(screen) {
     let allScreens = document.querySelectorAll(".game-screen");
     allScreens.forEach((scr) =>  {

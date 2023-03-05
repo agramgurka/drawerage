@@ -10,6 +10,7 @@
     <link href="{% static 'icons/favicon.ico' %}" rel="shortcut icon" type="image/x-icon" />
     <link rel="stylesheet" href="{% static 'css/game.css' %}">
     <link rel="stylesheet" href="{% static 'css/timer.css' %}">
+    <link rel="stylesheet" href="{% static 'css/answers.css' %}">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 </head>
 
@@ -59,15 +60,23 @@
          </div>
          <ul id="selecting-task" class="task-type invisible list-group col-sm-6"></ul>
      </div>
-     <div id="answers-screen" class="game-screen invisible row">
+     <div id="answers-screen" class="game-screen invisible row justify-content-between">
          <div id="variants-block" class="col-sm-5"></div>
-         <div id="variant-details" class="col-sm-7">
-             <div class="variant-details-text-container">
-                <div class="variant-details-text-inner">
-                     <div id="variant-text" class="variant-text"></div>
-                </div>
+         <div id="variant-details" class="col-sm-5">
+             <div class="answer-card">
+                 <div class="answer-card-inner">
+                     <div class="answer-card-front">
+                         <p id="answer-card-variant" class="answer-card-title"></p>
+                         <div id="variant-selects" class="d-flex justify-content-center"></div>
+                     </div>
+                     <div class="answer-card-back">
+                         <p id="answer-card-correctness" class="answer-card-title"></p>
+                         <p>Author:</p>
+                         <img id="answer-card-author-avatar" src="">
+                         <p id="answer-card-author"></p>
+                     </div>
+                 </div>
              </div>
-             <div id="variant-selects"></div>
          </div>
      </div>
      <div id="results-screen" class="game-screen invisible row justify-content-center">
@@ -124,6 +133,7 @@
 <script src="{%static 'js/results.js'%}"></script>
 <script src="{%static 'js/functions.js'%}"></script>
 <script src="{%static 'js/timer.js'%}"></script>
+<script src="{%static 'js/answers.js'%}"></script>
 <script src="{%static 'js/websocket.js'%}"></script>
 <script src="{%static 'js/buttons.js'%}"></script>
 <script src="{%static 'js/drawing.js'%}"></script>
