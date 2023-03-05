@@ -67,7 +67,7 @@ class StageTime(IntEnum):
     writing = 40
     selecting = 30
     results = 10
-    for_one_select = 3
+    for_one_answer = 4
 
 
 class MediaType(StrEnum):
