@@ -13,7 +13,7 @@ from .services.basics import (Timer, GameStage, GameRole, GameScreens,
 from .services.utils import setup_logger, display_task_result
 from .services.db_function import (
     get_current_round, get_drawing_task, get_game_stage, finish_game,
-    next_stage, get_players, get_role, get_variants, get_game_code,
+    next_stage, get_players, get_role, get_variants,
     get_results, register_channel, create_rounds, calculate_results, stage_completed,
     create_results, is_game_paused, switch_pause_state, get_players_answers,
     get_finished_players, populate_missing_variants)
@@ -94,6 +94,14 @@ class Game(AsyncJsonWebsocketConsumer):
                         self.global_group,
                         {
                             'type': 'game.resumed'
+                        }
+                    )
+                else:
+                    await self.channel_layer.group_send(
+                        self.global_group,
+                        {
+                            'type': 'game.paused',
+                            'text': 'Game is paused'
                         }
                     )
             if self.game_role == GameRole.player and game_stage == GameStage.finished:
