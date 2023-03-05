@@ -190,21 +190,12 @@ function displayButtons(enabledButtons) {
 })}
 
 function displayPausePopup(text){
-    const pausePopup = document.getElementById("pause-popup");
-    if (text) {
-        let pauseText = document.getElementById("pause-text");
-        pauseText.innerHTML = text;
-    }
-    if (pausePopup.classList.contains("invisible")){
-         pausePopup.classList.remove("invisible");
-    }
+    document.getElementById("pause-text").innerHTML = text;
+    document.getElementById("pause-popup").classList.remove("invisible");
 };
 
 function hidePausePopup() {
-    const pausePopup = document.getElementById("pause-popup");
-    if (!pausePopup.classList.contains("invisible")) {
-         pausePopup.classList.add("invisible");
-    }
+    document.getElementById("pause-popup").classList.add("invisible");
 }
 
 function submitPainting() {
@@ -316,4 +307,12 @@ function cancelGame() {
         })
     );
     displayButtons([]);
+}
+
+function initStage(stage) {
+    let enabledButtons = [];
+    if (stage == "pregame") enabledButtons = ["start-game"];
+    else if (stage != "finished") enabledButtons = ["cancel-game", "resume-game", "pause-game"];
+    else enabledButtons = ["restart-game"];
+    displayButtons(enabledButtons);
 }

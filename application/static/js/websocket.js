@@ -49,16 +49,8 @@ ws.onmessage = function(response) {
     if (command == "resume") {
         hidePausePopup();
     }
-    if (command == "state") {
-        if (res.stage) {
-            let enabledButtons = [];
-            if (res.stage == "pregame") enabledButtons = ["start-game"];
-            else if (res.stage != "finished") enabledButtons = ["cancel-game", "resume-game", "pause-game"];
-            else enabledButtons = ["restart-game"];
-            displayButtons(enabledButtons);
-        }
-        if (res.game_code) displayGameCode(res.game_code);
-        if (res.is_paused) displayPausePopup();
+    if (command == "init_stage") {
+        initStage(res.stage);
     }
     if (command == "timer") {
         setTimer(res.initial, res.left);

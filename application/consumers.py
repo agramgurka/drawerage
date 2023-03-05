@@ -79,11 +79,13 @@ class Game(AsyncJsonWebsocketConsumer):
         logger.info(f'command {command} received')
 
         if command == 'connected':
-            await self.send_game_state()
+            if self.paused:
+                await self.game_paused({'text': 'Game is paused'})
             game_stage = await to_async(get_game_stage)(self.game_id)
             if self.game_role == GameRole.host:
                 self.update_task = aio.create_task(self.broadcast_game_updates())
                 self.update_task.add_done_callback(display_task_result)
+                await self.send_stage()
                 if game_stage not in [GameStage.pregame, GameStage.finished]:
                     self.game_task = aio.create_task(self.process_game())
                     self.game_task.add_done_callback(display_task_result)
@@ -114,6 +116,7 @@ class Game(AsyncJsonWebsocketConsumer):
                     self.global_group,
                     {
                         'type': 'game.paused',
+                        'text': 'Game is paused'
                     }
                 )
                 logger.info('game is paused')
@@ -136,7 +139,7 @@ class Game(AsyncJsonWebsocketConsumer):
                     self.global_group,
                     {
                         'type': 'game.paused',
-                        'text': 'game is cancelled'
+                        'text': 'Game is cancelled'
                     }
                 )
 
@@ -249,6 +252,8 @@ class Game(AsyncJsonWebsocketConsumer):
                         result_updates['active_screen'] = GameScreens.final_standings
                         result_updates['results'] = results
 
+                        await self.send_stage()
+
                         await self.channel_layer.group_send(
                             self.global_group,
                             {
@@ -256,6 +261,7 @@ class Game(AsyncJsonWebsocketConsumer):
                                 'updates': result_updates
                             }
                         )
+                        break
 
                     elif game_stage == GameStage.pregame:
                         status_updates['task_type'] = TaskType.drawing
@@ -453,17 +459,12 @@ class Game(AsyncJsonWebsocketConsumer):
     async def send_timer(self, event: dict):
         await self.send_json(event)
 
-    async def send_game_state(self):
-        state = {
-            'command': 'state',
-            'is_paused': self.paused,
-        }
-        if self.game_role == GameRole.host:
-            state.update({
-                'game_code': await to_async(get_game_code)(self.game_id),
-                'stage': await to_async(get_game_stage)(self.game_id),
-            })
-        await self.send_json(state)
+    async def send_stage(self):
+        msg = {
+            'command': 'init_stage',
+            'stage': await to_async(get_game_stage)(self.game_id),
+            }
+        await self.send_json(msg)
 
     async def game_paused(self, event: dict):
         await self.send_json({

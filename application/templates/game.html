@@ -16,7 +16,7 @@
 
 <body>
 <div id="pause-popup" class="invisible text-center p-5">
-        <h1 id="pause-text">GAME IS PAUSED</h1>
+        <h1 id="pause-text"></h1>
         <button id="resume-game" type="button" class="btn btn-secondary control-btn invisible"> Resume </button>
 </div>
 <div class="container">
@@ -129,6 +129,7 @@
     const gameId = {{game_id}};
     const mainColor = "{{drawing_color}}";
     const staticUrl = {% get_static_prefix %};
+    const gameCode = "{{game_code}}";
 </script>
 <script src="{%static 'js/results.js'%}"></script>
 <script src="{%static 'js/functions.js'%}"></script>
@@ -137,6 +138,7 @@
 <script src="{%static 'js/websocket.js'%}"></script>
 <script src="{%static 'js/buttons.js'%}"></script>
 <script src="{%static 'js/drawing.js'%}"></script>
+<script src="{%static 'js/init.js'%}"></script>
 
 </body>
 </html>
