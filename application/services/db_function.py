@@ -1,4 +1,5 @@
 import base64
+import logging
 import random
 from functools import lru_cache
 from typing import Optional
@@ -21,9 +22,8 @@ from .basics import (DRAWING_COLORS,
                      POINTS_FOR_CORRECT_RECOGNITION,
                      GAME_CODE_LEN, USERNAME_LEN, CODE_CHARS,)
 from .tasks import BaseTaskProducer, PredefinedTaskProducer, Restriction, RuslangTaskProducer
-from .utils import setup_logger
 
-logger = setup_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 MIN_SIMILARITY_RANK = 92

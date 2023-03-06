@@ -1,4 +1,5 @@
 import asyncio as aio
+import logging
 from random import shuffle
 from typing import Optional
 
@@ -10,7 +11,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from .services.basics import (Timer, GameStage, GameRole, GameScreens,
                               RoundStage, TaskType, StageTime, MEDIA_UPLOAD_DELAY, GAME_UPDATE_DELAY)
-from .services.utils import setup_logger, display_task_result
+from .services.utils import display_task_result
 from .services.db_function import (
     get_current_round, get_drawing_task, get_game_stage, finish_game,
     next_stage, get_players, get_role, get_variants,
@@ -18,7 +19,7 @@ from .services.db_function import (
     create_results, is_game_paused, switch_pause_state, get_players_answers,
     get_finished_players, populate_missing_variants, deregister_channel)
 
-logger = setup_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class Game(AsyncJsonWebsocketConsumer):
