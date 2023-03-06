@@ -92,14 +92,13 @@ USE_I18N = True
 
 USE_TZ = True
 
-STATIC_URL = 'static/'
-
-STATIC_ROOT = '/static/'
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_URL = '/static/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
+SERVE_STATIC_WITH_DJANGO = False
 
 GAME_SPEED = 1.0
 
