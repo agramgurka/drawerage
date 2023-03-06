@@ -1,4 +1,5 @@
 import json
+import logging
 
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
@@ -12,10 +13,9 @@ from .services.db_function import (join_game, create_game, get_active_game,
                                    apply_variant, select_variant, get_game_stage,
                                    get_player_color, is_player, is_host)
 from .services.basics import MediaType, GameStage
-from .services.utils import setup_logger
 from .forms import JoinGameForm
 
-logger = setup_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class StartPage(FormView):
