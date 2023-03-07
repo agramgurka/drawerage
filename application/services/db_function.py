@@ -58,6 +58,12 @@ def register_channel(game_id: int, user: User, channel_name: str):
     Player.objects.filter(games=game_id, user=user).update(channel_name=channel_name)
 
 
+def deregister_channel(game_id: int, user: User):
+    """ deregisters player's websocket channel name"""
+
+    Player.objects.filter(games=game_id, user=user).update(channel_name=None)
+
+
 def create_player(game_id: int, user: User, nickname: str = None, is_host: bool = False) -> Player:
     """ creates player's record """
 
