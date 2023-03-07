@@ -200,14 +200,14 @@ class Game(AsyncJsonWebsocketConsumer):
 
         timer = Timer(int(stage_time / settings.GAME_SPEED))
         while not timer.exceed:
-            if not self.paused:
-                if await to_async(stage_completed)(self.game_id, game_stage, round_stage):
-                    timer.time = -1
-                    logger.info('stage is completed before time exceeds')
-                await self.broadcast_timer_update(stage_time, timer.time)
-                await timer.tick()
-            else:
+            if self.paused:
                 await aio.sleep(1)
+                continue
+            if await to_async(stage_completed)(self.game_id, game_stage, round_stage):
+                timer.time = -1
+                logger.info('stage is completed before time exceeds')
+            await self.broadcast_timer_update(stage_time, timer.time)
+            await timer.tick()
         if game_stage == GameStage.preround or round_stage == RoundStage.writing:
             timer = Timer(MEDIA_UPLOAD_DELAY)
             while not await to_async(stage_completed)(self.game_id, game_stage, round_stage) and not timer.exceed:
@@ -497,25 +497,25 @@ class Game(AsyncJsonWebsocketConsumer):
         answers = await to_async(get_players_answers)(game_round)
         is_correct = False
         while answers:
-            if not self.paused:
-                if answers['incorrect']:
-                    variant = answers['incorrect'].pop()
-                else:
-                    answers.pop('incorrect')
-                    variant = answers.pop('correct')
-                    is_correct = True
-                await self.channel_layer.group_send(
-                    self.global_group,
-                    {
-                        'type': 'display.answer',
-                        'variant': variant,
-                        'is_correct': is_correct
-                    }
-                )
-                time_for_selects = len(variant['selected_by']) or 1
-                await aio.sleep(StageTime.for_one_answer.value + time_for_selects)
-            else:
+            if self.paused:
                 await aio.sleep(1)
+                continue
+            if answers['incorrect']:
+                variant = answers['incorrect'].pop()
+            else:
+                answers.pop('incorrect')
+                variant = answers.pop('correct')
+                is_correct = True
+            await self.channel_layer.group_send(
+                self.global_group,
+                {
+                    'type': 'display.answer',
+                    'variant': variant,
+                    'is_correct': is_correct
+                }
+            )
+            time_for_selects = len(variant['selected_by']) or 1
+            await aio.sleep(StageTime.for_one_answer.value + time_for_selects)
 
     async def display_answer(self, event):
         await self.send_json({
