@@ -167,6 +167,8 @@ def create_rounds(game_id: int) -> None:
     """ creates rounds for game """
 
     players = get_players(game_id)
+    if len(players) < 2:
+        raise ValueError('At least two players are required to start the game')
     game = Game.objects.get(pk=game_id)
     restrictions = None
     for order_number, player in enumerate(players * game.cycles):

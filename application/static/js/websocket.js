@@ -22,40 +22,43 @@ function connect() {
     ws.onmessage = function(response) {
         const res = JSON.parse(response.data);
         const command = res.command;
-        if (command == "update") {
+        if (command === "update") {
             const activeScreen = res.active_screen;
             let screen = null;
-            if (activeScreen == "status") {
+            if (activeScreen === "status") {
                 screen = initStatusScreen(res.players, res.task_type)
             }
-            if (activeScreen == "task") {
+            if (activeScreen === "task") {
                 screen = initTaskScreen(res.task_type, res.task);
             }
-            if (activeScreen == "results") {
+            if (activeScreen === "results") {
                 screen = initResultsScreen(res.results);
             }
-            if (activeScreen == "answers") {
+            if (activeScreen === "answers") {
                 screen = initAnswersScreen(res.variants);
             }
-            if (activeScreen == "final_standings") {
+            if (activeScreen === "final_standings") {
                 screen = initFinalStandingsScreen(res.results);
             }
             displayScreen(screen);
         }
-        if (command == "display_answer") {
+        if (command === "display_answer") {
             displayAnswer(res.variant, res.is_correct);
         }
-        if (command == "pause") {
+        if (command === "pause") {
             displayPausePopup(res.text);
         }
-        if (command == "resume") {
+        if (command === "resume") {
             hidePausePopup();
         }
-        if (command == "init_stage") {
+        if (command === "init_stage") {
             initStage(res.stage);
         }
-        if (command == "timer") {
+        if (command === "timer") {
             setTimer(res.initial, res.left);
+        }
+        if (command === "error") {
+            handleError(res.error_type, res.error_message);
         }
     };
     ws.onerror = function(err) {

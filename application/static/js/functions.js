@@ -316,3 +316,10 @@ function initStage(stage) {
     else enabledButtons = ["restart-game"];
     displayButtons(enabledButtons);
 }
+
+function handleError(errorType, errorMessage) {
+    if (errorType === "start_game") {
+        console.log(errorMessage);
+        displayButtons(["start-game"]);
+    }
+}

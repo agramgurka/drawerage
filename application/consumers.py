@@ -109,13 +109,22 @@ class Game(AsyncJsonWebsocketConsumer):
 
         if self.game_role == GameRole.host:
             if command == 'start':
-                await to_async(create_rounds)(self.game_id)
-                await to_async(create_results)(self.game_id)
-                await to_async(next_stage)(self.game_id)
+                try:
+                    await to_async(create_rounds)(self.game_id)
+                    await to_async(create_results)(self.game_id)
+                    await to_async(next_stage)(self.game_id)
 
-                self.game_task = aio.create_task(self.process_game())
-                self.game_task.add_done_callback(display_task_result)
-                logger.info('game is started')
+                    self.game_task = aio.create_task(self.process_game())
+                    self.game_task.add_done_callback(display_task_result)
+                    logger.info('game is started')
+                except ValueError as e:
+                    await self.send_json(
+                        {
+                            'command': 'error',
+                            'error_type': 'start_game',
+                            'error_message': str(e),
+                        }
+                    )
 
             if command == 'pause':
                 await to_async(switch_pause_state)(self.game_id, pause=True)
