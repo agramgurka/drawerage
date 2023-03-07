@@ -16,7 +16,7 @@ from .services.db_function import (
     next_stage, get_players, get_role, get_variants,
     get_results, register_channel, create_rounds, calculate_results, stage_completed,
     create_results, is_game_paused, switch_pause_state, get_players_answers,
-    get_finished_players, populate_missing_variants)
+    get_finished_players, populate_missing_variants, deregister_channel)
 
 logger = setup_logger(__name__)
 
@@ -52,7 +52,8 @@ class Game(AsyncJsonWebsocketConsumer):
             
     async def channel_send(self, channel_name, data):
         try:
-            return await self.channel_layer.send(channel_name, data)
+            if channel_name:
+                return await self.channel_layer.send(channel_name, data)
         except ChannelFull:
             logger.exception('Channel is FULL')
 
@@ -72,6 +73,7 @@ class Game(AsyncJsonWebsocketConsumer):
         await self.channel_layer.group_discard(
             self.global_group, self.channel_name
         )
+        await to_async(deregister_channel)(self.game_id, self.scope['user'])
         logger.info('disconnected')
 
     async def receive_json(self, content, **kwargs):
