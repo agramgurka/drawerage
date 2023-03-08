@@ -1,7 +1,9 @@
 import json
 import logging
 
+from channels.layers import get_channel_layer
 from django.http import JsonResponse
+from channels.db import database_sync_to_async as to_async
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views import View
@@ -11,7 +13,7 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned, 
 from .services.db_function import (join_game, create_game, get_active_game,
                                    upload_avatar, upload_painting, get_game_code,
                                    apply_variant, select_variant, get_game_stage,
-                                   get_player_color, is_player, is_host)
+                                   get_player_color, is_player, is_host, get_host_channel)
 from .services.basics import MediaType, GameStage
 from .forms import JoinGameForm
 
@@ -63,7 +65,9 @@ class Game(View):
 class MediaUpload(View):
     """ all the paintings and variants are applied through this view """
 
-    def post(self, request):
+    channel_layer = get_channel_layer()
+
+    async def post(self, request):
         data = json.loads(request.body.decode("utf-8"))
         media_type = data.get('media_type')
         game_id = data.get('game_id')
@@ -71,34 +75,43 @@ class MediaUpload(View):
         status = 'error'
         status_code = 200
         if media_type == MediaType.painting_task:
-            game_stage = get_game_stage(game_id)
+            game_stage = await to_async(get_game_stage)(game_id)
             if game_stage == GameStage.pregame:
                 try:
-                    upload_avatar(game_id, request.user, media)
+                    await to_async(upload_avatar)(game_id, request.user, media)
                     status = 'success'
                 except ValidationError:
                     status = 'duplicate'
                     status_code = 400
             if game_stage == GameStage.preround:
                 try:
-                    upload_painting(game_id, request.user, media)
+                    await to_async(upload_painting)(game_id, request.user, media)
                     status = 'success'
                 except ValidationError:
                     status = 'duplicate'
                     status_code = 400
         if media_type == MediaType.variant:
             try:
-                apply_variant(game_id, request.user, media)
+                await to_async(apply_variant)(game_id, request.user, media)
                 status = 'success'
             except ValidationError:
                 status = 'duplicate'
                 status_code = 400
         if media_type == MediaType.answer:
             try:
-                select_variant(game_id, request.user, media)
+                await to_async(select_variant)(game_id, request.user, media)
                 status = 'success'
             except ValidationError:
                 status = 'duplicate'
                 status_code = 400
+        if status_code == 200:
+            host_channel = await to_async(get_host_channel)(game_id)
+            logger.debug(host_channel)
+            await self.channel_layer.send(
+                host_channel,
+                {
+                    'type': 'broadcast.updates'
+                }
+            )
         return JsonResponse({'status': status}, status=status_code)
 

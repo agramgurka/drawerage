@@ -84,10 +84,9 @@ class Game(AsyncJsonWebsocketConsumer):
         if command == 'connected':
             if self.paused:
                 await self.game_paused({'text': 'Game is paused'})
+            await self.broadcast_updates()
             game_stage = await to_async(get_game_stage)(self.game_id)
             if self.game_role == GameRole.host:
-                self.update_task = aio.create_task(self.broadcast_game_updates())
-                self.update_task.add_done_callback(display_task_result)
                 await self.send_stage()
                 if game_stage not in [GameStage.pregame, GameStage.finished]:
                     self.game_task = aio.create_task(self.process_game())
@@ -107,8 +106,6 @@ class Game(AsyncJsonWebsocketConsumer):
                             'text': 'Game is paused'
                         }
                     )
-            if self.game_role == GameRole.player and game_stage == GameStage.finished:
-                await self.send_standings({})
 
         if self.game_role == GameRole.host:
             if command == 'start':
@@ -193,11 +190,13 @@ class Game(AsyncJsonWebsocketConsumer):
                             await self.process_stage(GameStage.round, RoundStage.results)
                 logger.info('move to next stage')
                 await to_async(next_stage)(self.game_id)
+            await self.broadcast_updates()
         except aio.exceptions.CancelledError:
             pass
 
     async def process_stage(self, game_stage: GameStage, round_stage: Optional[RoundStage] = None):
         logger.info(f'start  {game_stage} stage')
+        await self.broadcast_updates()
 
         if game_stage == GameStage.preround:
             stage_time = StageTime.preround
@@ -226,234 +225,193 @@ class Game(AsyncJsonWebsocketConsumer):
                 await timer.tick()
         logger.info('stage is over')
 
-    async def broadcast_game_updates(self):
-        try:
-            status_updates = {
-                'active_screen': GameScreens.status,
-                'players': {},
-                'task_type': None
-            }
-            task_updates = {
-                'active_screen': GameScreens.task,
-                'task_type': None,
-                'task': None
-            }
-            result_updates = {
-                'active_screen': GameScreens.results,
-            }
-            answers_updates = {
-                'active_screen': GameScreens.answers
-            }
+    async def broadcast_updates(self, event=None):
+        logger.info('broadcasting updates')
+        status_updates = {
+            'active_screen': GameScreens.status,
+            'players': {},
+            'task_type': None
+        }
+        task_updates = {
+            'active_screen': GameScreens.task,
+            'task_type': None,
+            'task': None
+        }
+        result_updates = {
+            'active_screen': GameScreens.results,
+        }
+        answers_updates = {
+            'active_screen': GameScreens.answers
+        }
 
-            current_game_stage = None
-            current_round_stage = None
-            drawing_tasks = {}
-            variants = {}
-            answers = {}
-            results = []
+        players = await to_async(get_players)(self.game_id, host=True)
+        game_stage = await to_async(get_game_stage)(self.game_id)
 
-            players = await to_async(get_players)(self.game_id)
-            for player in players:
+        for player in players:
+            if not player.is_host:
                 status_updates['players'][player.nickname] = {
                     'avatar': None if not player.avatar else player.avatar.url
                 }
 
-            while True:
-                if not self.paused:
-                    game_stage = await to_async(get_game_stage)(self.game_id)
-                    players = await to_async(get_players)(self.game_id, host=True)
-                    if current_game_stage != game_stage:
-                        current_game_stage = game_stage
-                        drawing_tasks = {}
-
-                    if game_stage == GameStage.finished:
-                        if not results:
-                            results = await to_async(get_results)(self.game_id)
-                        result_updates['active_screen'] = GameScreens.final_standings
-                        result_updates['results'] = results
-
-                        await self.send_stage()
-
-                        await self.channel_layer.group_send(
-                            self.global_group,
+        if game_stage == GameStage.finished:
+            results = await to_async(get_results)(self.game_id)
+            result_updates['active_screen'] = GameScreens.final_standings
+            result_updates['results'] = results
+            await self.send_stage()
+            await self.channel_layer.group_send(
+                self.global_group,
+                {
+                    'type': 'send.update',
+                    **result_updates,
+                }
+            )
+        if game_stage == GameStage.pregame:
+            status_updates['task_type'] = TaskType.drawing
+            task_updates['task_type'] = TaskType.drawing
+            task_updates['task'] = 'draw yourself'
+            for player in players:
+                if not player.is_host:
+                    status_updates['players'][player.nickname]['finished'] = bool(player.avatar)
+            for player in players:
+                if player.avatar or player.is_host:
+                    await self.channel_send(
+                        player.channel_name,
+                        {
+                            'type': 'send.update',
+                            **status_updates
+                        }
+                    )
+                elif player.channel_name:
+                    await self.channel_send(
+                        player.channel_name,
+                        {
+                            'type': 'send.update',
+                            **task_updates
+                        }
+                    )
+        elif game_stage == GameStage.preround:
+            status_updates['task_type'] = TaskType.drawing
+            task_updates['task_type'] = TaskType.drawing
+            drawing_tasks = {}
+            for player in players:
+                if not player.is_host:
+                    drawing_tasks[player.pk] = await to_async(get_drawing_task)(self.game_id, player)
+            finished_players = await to_async(get_finished_players)(self.game_id, game_stage)
+            for player in players:
+                if not player.is_host:
+                    status_updates['players'][player.nickname]['finished'] = \
+                        player.pk in finished_players
+            for player in players:
+                if player.is_host or status_updates['players'][player.nickname]['finished']:
+                    await self.channel_send(
+                        player.channel_name,
+                        {
+                            'type': 'send.update',
+                            **status_updates
+                        }
+                    )
+                else:
+                    task_updates['task'] = drawing_tasks[player.pk]
+                    await self.channel_send(
+                        player.channel_name,
+                        {
+                            'type': 'send.update',
+                            **task_updates
+                        }
+                    )
+        elif game_stage == GameStage.round:
+            try:
+                game_round = await to_async(get_current_round)(self.game_id)
+            except ObjectDoesNotExist:
+                raise
+            if game_round.stage == RoundStage.writing:
+                status_updates['task_type'] = TaskType.writing
+                task_updates['task_type'] = TaskType.writing
+                task_updates['task'] = game_round.painting.url if game_round.painting else None
+                finished_players = await to_async(get_finished_players)(self.game_id, game_stage,
+                                                                        game_round)
+                for player in players:
+                    if not player.is_host:
+                        status_updates['players'][player.nickname]['finished'] = \
+                            player.pk in finished_players
+                for player in players:
+                    if player.is_host or status_updates['players'][player.nickname]['finished']:
+                        await self.channel_send(
+                            player.channel_name,
                             {
-                                'type': 'send.standings',
-                                'updates': result_updates
+                                'type': 'send.update',
+                                **status_updates
                             }
                         )
-                        break
-
-                    elif game_stage == GameStage.pregame:
-                        status_updates['task_type'] = TaskType.drawing
-                        task_updates['task_type'] = TaskType.drawing
-                        task_updates['task'] = 'draw yourself'
-
-                        for player in players:
-                            if not player.is_host:
-                                status_updates['players'][player.nickname] = {
-                                    'avatar': None if not player.avatar else player.avatar.url,
-                                    'finished': bool(player.avatar)
-                                }
-
-                        for player in players:
-                            if player.avatar or player.is_host:
-                                await self.channel_send(
-                                    player.channel_name,
-                                    {
-                                        'type': 'send.update',
-                                        **status_updates
-                                    }
-                                )
-                            elif player.channel_name:
-                                await self.channel_send(
-                                    player.channel_name,
-                                    {
-                                        'type': 'send.update',
-                                        **task_updates
-                                    }
-                                )
-
-                    elif game_stage == GameStage.preround:
-                        status_updates['task_type'] = TaskType.drawing
-                        task_updates['task_type'] = TaskType.drawing
-                        if not drawing_tasks:
-                            for player in players:
-                                if not player.is_host:
-                                    drawing_tasks[player.pk] = await to_async(get_drawing_task)(self.game_id, player)
-                        finished_players = await to_async(get_finished_players)(self.game_id, game_stage)
-                        for player in players:
-                            if not player.is_host:
-                                status_updates['players'][player.nickname]['finished'] = \
-                                    player.pk in finished_players
-                        for player in players:
-                            if player.is_host or status_updates['players'][player.nickname]['finished']:
-                                await self.channel_send(
-                                    player.channel_name,
-                                    {
-                                        'type': 'send.update',
-                                        **status_updates
-                                    }
-                                )
-                            else:
-                                task_updates['task'] = drawing_tasks[player.pk]
-                                await self.channel_send(
-                                    player.channel_name,
-                                    {
-                                        'type': 'send.update',
-                                        **task_updates
-                                    }
-                                )
-
-                    elif game_stage == GameStage.round:
-                        try:
-                            game_round = await to_async(get_current_round)(self.game_id)
-                        except ObjectDoesNotExist:
-                            continue
-                        if current_round_stage != game_round.stage:
-                            current_round_stage = game_round.stage
-                            variants = {}
-                            answers = {}
-                            results = []
-
-                        if game_round.stage == RoundStage.writing:
-                            status_updates['task_type'] = TaskType.writing
-                            task_updates['task_type'] = TaskType.writing
-                            task_updates['task'] = game_round.painting.url if game_round.painting else None
-                            finished_players = await to_async(get_finished_players)(self.game_id, game_stage,
-                                                                                    game_round)
-
-                            for player in players:
-                                if not player.is_host:
-                                    status_updates['players'][player.nickname]['finished'] = \
-                                        player.pk in finished_players
-                            for player in players:
-                                if player.is_host or status_updates['players'][player.nickname]['finished']:
-                                    await self.channel_send(
-                                        player.channel_name,
-                                        {
-                                            'type': 'send.update',
-                                            **status_updates
-                                        }
-                                    )
-                                else:
-                                    await self.channel_send(
-                                        player.channel_name,
-                                        {
-                                            'type': 'send.update',
-                                            **task_updates
-                                        }
-                                    )
-
-                        elif game_round.stage == RoundStage.selecting:
-                            status_updates['task_type'] = TaskType.selecting
-                            task_updates['task_type'] = TaskType.selecting
-                            finished_players = await to_async(get_finished_players)(self.game_id, game_stage,
-                                                                                    game_round)
-                            if not variants:
-                                all_variants = await to_async(get_variants)(game_round)
-                                for player in players:
-                                    player_variants = [
-                                        variant for variant, user_id in all_variants
-                                        if user_id != player.pk
-                                    ]
-                                    shuffle(player_variants)
-                                    variants[player.pk] = player_variants
-
-                            for player in players:
-                                if not player.is_host:
-                                    status_updates['players'][player.nickname]['finished'] = \
-                                        player.pk in finished_players
-
-                            for player in players:
-                                if player.is_host or status_updates['players'][player.nickname]['finished']:
-                                    await self.channel_send(
-                                        player.channel_name,
-                                        {
-                                            'type': 'send.update',
-                                            **status_updates
-                                        }
-                                    )
-                                else:
-                                    task_updates['task'] = {
-                                        'painting': game_round.painting.url if game_round.painting else None,
-                                        'variants': variants[player.pk],
-                                    }
-                                    await self.channel_send(
-                                        player.channel_name,
-                                        {
-                                            'type': 'send.update',
-                                            **task_updates
-                                        }
-                                    )
-
-                        elif game_round.stage == RoundStage.answers:
-                            if not answers:
-                                answers = await to_async(get_variants)(game_round)
-                                answers = [variant for variant, _ in answers]
-                                shuffle(answers)
-                            answers_updates['variants'] = answers
-                            await self.channel_layer.group_send(
-                                self.global_group,
-                                {
-                                    'type': 'send.update',
-                                    **answers_updates
-                                }
-                            )
-                        elif game_round.stage == RoundStage.results:
-                            if not results:
-                                results = await to_async(get_results)(self.game_id)
-                            result_updates['results'] = results
-                            await self.channel_layer.group_send(
-                                self.global_group,
-                                {
-                                    'type': 'send.update',
-                                    **result_updates
-                                }
-                            )
-                await aio.sleep(GAME_UPDATE_DELAY)
-            logger.info('updates broadcast is finished')
-        except aio.exceptions.CancelledError:
-            pass
+                    else:
+                        await self.channel_send(
+                            player.channel_name,
+                            {
+                                'type': 'send.update',
+                                **task_updates
+                            }
+                        )
+            elif game_round.stage == RoundStage.selecting:
+                status_updates['task_type'] = TaskType.selecting
+                task_updates['task_type'] = TaskType.selecting
+                finished_players = await to_async(get_finished_players)(self.game_id, game_stage,
+                                                                        game_round)
+                variants = {}
+                all_variants = await to_async(get_variants)(game_round)
+                for player in players:
+                    player_variants = [
+                        variant for variant, user_id in all_variants
+                        if user_id != player.pk
+                    ]
+                    shuffle(player_variants)
+                    variants[player.pk] = player_variants
+                for player in players:
+                    if not player.is_host:
+                        status_updates['players'][player.nickname]['finished'] = \
+                            player.pk in finished_players
+                for player in players:
+                    if player.is_host or status_updates['players'][player.nickname]['finished']:
+                        await self.channel_send(
+                            player.channel_name,
+                            {
+                                'type': 'send.update',
+                                **status_updates
+                            }
+                        )
+                    else:
+                        task_updates['task'] = {
+                            'painting': game_round.painting.url if game_round.painting else None,
+                            'variants': variants[player.pk],
+                        }
+                        await self.channel_send(
+                            player.channel_name,
+                            {
+                                'type': 'send.update',
+                                **task_updates
+                            }
+                        )
+            elif game_round.stage == RoundStage.answers:
+                answers = await to_async(get_variants)(game_round)
+                answers = [variant for variant, _ in answers]
+                shuffle(answers)
+                answers_updates['variants'] = answers
+                await self.channel_layer.group_send(
+                    self.global_group,
+                    {
+                        'type': 'send.update',
+                        **answers_updates
+                    }
+                )
+            elif game_round.stage == RoundStage.results:
+                results = await to_async(get_results)(self.game_id)
+                result_updates['results'] = results
+                await self.channel_layer.group_send(
+                    self.global_group,
+                    {
+                        'type': 'send.update',
+                        **result_updates
+                    }
+                )
 
     async def send_update(self, event: dict):
         if event != self.previous_update:
@@ -494,9 +452,10 @@ class Game(AsyncJsonWebsocketConsumer):
         )
 
     async def game_resumed(self, event: dict):
-        await self.send_json({
-            'command': 'resume',
-        }
+        await self.send_json(
+            {
+                'command': 'resume',
+            }
         )
 
     async def cancel_tasks(self):
@@ -506,6 +465,7 @@ class Game(AsyncJsonWebsocketConsumer):
             self.game_task.cancel()
 
     async def manage_answers_display(self, game_round):
+        await self.broadcast_updates()
         answers = await to_async(get_players_answers)(game_round)
         is_correct = False
         while answers:
@@ -535,12 +495,3 @@ class Game(AsyncJsonWebsocketConsumer):
             'variant': event['variant'],
             'is_correct': event['is_correct']
         })
-
-    async def send_standings(self, event):
-        result_updates = event.get('updates')
-        if not result_updates:
-            result_updates = {
-                'active_screen': GameScreens.final_standings,
-                'results': await to_async(get_results)(self.game_id)
-            }
-        await self.send_update(result_updates)
