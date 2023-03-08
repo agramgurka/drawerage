@@ -24,28 +24,34 @@ function displayAnswer(answer, isCorrect) {
 
     if (answer.selected_by.length) {
         for (let i in answer.selected_by) {
-            delay = 1000 * (parseInt(i) + 1);
-            setTimeout(displaySelectedBy, delay, variantSelects, answer.selected_by[i]);
-            if (i == answer.selected_by.length - 1) {
+            var delay = 1000 * (parseInt(i) + 1);
+            setTimeout(() => displaySelectedBy(variantSelects, answer.selected_by[i]), delay);
+            if (parseInt(i) === answer.selected_by.length - 1) {
                 setTimeout(initCardBack, delay + 1000, answer, isCorrect);
                 setTimeout(flipAnswerCard, delay + 1000);
             }
         }
     }
     else {
-        setTimeout(initCardBack, 1000, answer, isCorrect);
+        setTimeout(() => initCardBack(answer, isCorrect), 1000);
         setTimeout(flipAnswerCard, 2000);
     }
 }
 
 function initCardBack(answer, isCorrect) {
-    let variantAuthor = document.getElementById("answer-card-author");
-    let variantAuthorAvatar = document.getElementById("answer-card-author-avatar");
+    let variantAuthorContainer = document.getElementById("answer-card-author");
+    variantAuthorContainer.innerHTML = '';
     let cardBack = document.querySelector(".answer-card-back");
     let cardCorrectness = document.getElementById("answer-card-correctness");
 
-    variantAuthor.innerHTML = answer.author.nickname;
-    variantAuthorAvatar.src = answer.author.avatar;
+    if (answer.author.avatar) {
+        const avatarEl = document.createElement('img');
+        avatarEl.src = answer.author.avatar;
+        variantAuthorContainer.append(avatarEl);
+    }
+    const authorNicknameEl = document.createElement('p');
+    authorNicknameEl.append(answer.author.nickname)
+    variantAuthorContainer.append(authorNicknameEl);
 
     if (isCorrect) {
         cardBack.classList.remove("answer-card-back-incorrect");

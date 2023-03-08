@@ -495,8 +495,8 @@ def get_players_answers(game_round: Round):
         answer = {
             'text': variant.text,
             'author': {
-                'nickname': variant.author.nickname,
-                'avatar': variant.author.avatar.url
+                'nickname': variant.author.nickname if variant.author else 'Random answer',
+                'avatar': variant.author.avatar.url if variant.author else None,
             },
             'selected_by': [player.avatar.url for player in variant.selected_by.all()]
         }
