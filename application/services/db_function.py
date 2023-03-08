@@ -525,3 +525,7 @@ def populate_missing_variants(game_round: Round):
 
 def is_host(game_id: int, user: User) -> bool:
     return Player.objects.filter(games=game_id, user=user, is_host=True).exists()
+
+
+def get_host_channel(game_id: int) -> str:
+    return Player.objects.get(games=game_id, is_host=True).channel_name
