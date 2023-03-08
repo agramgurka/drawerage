@@ -154,19 +154,26 @@ def get_ruslang_task_producer(lang) -> RuslangTaskProducer:
     return RuslangTaskProducer(lang)
 
 
-def available_task_producers(lang) -> list[BaseTaskProducer]:
+def available_task_producers(lang) -> list[tuple[BaseTaskProducer, int]]:
+    """
+    Returns provider and weight how ofter it should appears
+    """
     return [
-        # predefined tasks from databse
-        get_predefined_task_producer(lang),
+        # predefined tasks from database
+        (get_predefined_task_producer(lang), 5),
         # random phrase from ruslang
-        get_ruslang_task_producer(lang),
+        (get_ruslang_task_producer(lang), 2),
     ]
 
 
 def create_drawing_task(restrictions) -> tuple[str, Restriction]:
     """ returns new painting task """
 
-    return random.choice(available_task_producers('ru')).get_task(restrictions)
+    producers_with_weights = available_task_producers('ru')
+    return random.choices(
+        [x for x, _ in producers_with_weights],
+        weights=[x for _, x in producers_with_weights],
+    )[0].get_task(restrictions)
 
 
 def create_rounds(game_id: int) -> None:
