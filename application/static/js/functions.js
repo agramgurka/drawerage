@@ -311,7 +311,7 @@ function cancelGame() {
 
 function initStage(stage) {
     let enabledButtons = [];
-    if (stage == "pregame") enabledButtons = ["start-game"];
+    if (stage == "pregame") enabledButtons = ["start-game", "cancel-game"];
     else if (stage != "finished") enabledButtons = ["cancel-game", "resume-game", "pause-game"];
     else enabledButtons = ["restart-game"];
     displayButtons(enabledButtons);
