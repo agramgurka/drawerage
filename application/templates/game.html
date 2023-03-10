@@ -15,9 +15,17 @@
 </head>
 
 <body>
-<div id="pause-popup" class="invisible text-center p-5">
-        <h1 id="pause-text"></h1>
+<div id="pause-popup" class="pop-up invisible text-center p-5">
+        <h1 id="pause-popup-text">Game is paused</h1>
         <button id="resume-game" type="button" class="btn btn-secondary control-btn invisible"> Resume </button>
+</div>
+<div id="cancel-popup" class="pop-up invisible text-center p-5">
+        <h1 id="cancel-popup-text">Game is cancelled</h1>
+        <a role="button" class="btn btn-secondary" href="/">Main page</a>
+</div>
+<div id="disconnect-popup" class="pop-up invisible text-center p-5">
+        <h1 id="disconnect-popup-text"></h1>
+        <button id="reconnect-server" type="button" class="btn btn-secondary"> Reconnect </button>
 </div>
 <div class="container">
     <div class="row justify-content-center">
@@ -85,7 +93,7 @@
      </div>
      <div id="final-standings" class="game-screen justify-content-center row invisible">
          <div class="col-md-6">
-             <a id="main-menu-btn" role="button" class="btn btn-secondary" href="/">Main page</a>
+             <a role="button" class="btn btn-secondary" href="/">Main page</a>
              <button id="restart-game" type="button" class="btn btn-secondary invisible control-btn"> Play again </button>
              <div id="winners" class="d-flex justify-content-center align-items-end">
                  <div id="second-place-card" class="player-card invisible">

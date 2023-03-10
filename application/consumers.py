@@ -27,7 +27,6 @@ class Game(AsyncJsonWebsocketConsumer):
         self.game_id = None
         self.game_role = None
         self.global_group = None
-        self.update_task = None
         self.previous_update = {}
         self.game_task = None
         self.paused = False
@@ -155,8 +154,8 @@ class Game(AsyncJsonWebsocketConsumer):
                 await self.channel_layer.group_send(
                     self.global_group,
                     {
-                        'type': 'game.paused',
-                        'text': 'Game is cancelled'
+                        'type': 'game.cancelled',
+                        'text': 'Game is cancelled',
                     }
                 )
 
@@ -447,7 +446,14 @@ class Game(AsyncJsonWebsocketConsumer):
     async def game_paused(self, event: dict):
         await self.send_json({
             'command': 'pause',
-            **event
+            'text': event['text']
+        }
+        )
+
+    async def game_cancelled(self, event: dict):
+        await self.send_json({
+            'command': 'cancel',
+            'text': event['text']
         }
         )
 
@@ -459,8 +465,6 @@ class Game(AsyncJsonWebsocketConsumer):
         )
 
     async def cancel_tasks(self):
-        if self.update_task:
-            self.update_task.cancel()
         if self.game_task:
             self.game_task.cancel()
 

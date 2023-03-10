@@ -4,3 +4,4 @@ document.getElementById("start-game").addEventListener("click", startGame);
 document.getElementById("pause-game").addEventListener("click", pauseGame);
 document.getElementById("resume-game").addEventListener("click", resumeGame);
 document.getElementById("cancel-game").addEventListener("click", cancelGame);
+document.getElementById("reconnect-server").addEventListener("click", reconnectServer);
