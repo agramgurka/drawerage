@@ -498,7 +498,10 @@ def get_players_answers(game_round: Round):
                 'nickname': variant.author.nickname if variant.author else 'Random answer',
                 'avatar': variant.author.avatar.url if variant.author else None,
             },
-            'selected_by': [player.avatar.url for player in variant.selected_by.all()]
+            'selected_by': [
+                {"nickname": player.nickname, "avatar": player.avatar.url}
+                for player in variant.selected_by.all()
+            ]
         }
         if variant.author == game_round.painter:
             answers['correct'] = answer

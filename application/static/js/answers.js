@@ -75,8 +75,13 @@ function flipAnswerCard() {
 }
 
 function displaySelectedBy(variant, player) {
-        let playerImg = document.createElement('img');
-        playerImg.classList.add('selected-by-icon');
-        playerImg.src = player;
-        variant.appendChild(playerImg);
+        let selectedBlock = document.createElement("div");
+        let playerImg = document.createElement("img");
+        let playerNickname = document.createElement("p");
+        playerImg.classList.add("selected-by-icon");
+        playerImg.src = player.avatar;
+        playerNickname.innerHTML = player.nickname;
+        selectedBlock.appendChild(playerImg);
+        selectedBlock.appendChild(playerNickname);
+        variant.appendChild(selectedBlock);
 }
