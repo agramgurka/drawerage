@@ -151,4 +151,4 @@ function initResultsScreen(results) {
         }, 3000);
 
     return document.getElementById("results-screen");
-};
+}

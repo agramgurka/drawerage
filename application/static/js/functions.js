@@ -109,17 +109,18 @@ function initFinalStandingsScreen(standings) {
 
     for (let i in standings) {
         if (i < 3) {
-            playerCardAvatar = document.createElement("img");
+            const playerCardAvatar = document.createElement("img");
             playerCardAvatar.classList.add("player-card-img");
+            let playerCardScore;
             if (i == 0) {
                  playerCard = document.querySelector("#first-place-card");
                  playerCardScore = document.querySelector("#first-place-card .player-card-text");
             }
-            if (i == 1) {
+            else if (i == 1) {
                  playerCard = document.querySelector("#second-place-card");
                  playerCardScore = document.querySelector("#second-place-card .player-card-text");
             }
-            if (i == 2) {
+            else if (i == 2) {
                 playerCard = document.querySelector("#third-place-card");
                 playerCardScore = document.querySelector("#third-place-card .player-card-text");
             }
@@ -156,8 +157,7 @@ function initFinalStandingsScreen(standings) {
         newRow.appendChild(score);
         scoreTable.appendChild(newRow);
     }
-    const screen = document.getElementById("final-standings");
-    return screen;
+    return document.getElementById("final-standings");
 }
 
 function displayScreen(screen) {
@@ -172,12 +172,12 @@ function displayScreen(screen) {
 }
 
 function displayGameCode(gameCode) {
-    codeBlock = document.getElementById("game-code");
+    const codeBlock = document.getElementById("game-code");
     codeBlock.innerHTML = gameCode;
 }
 
 function displayButtons(enabledButtons) {
-    controlBtns = document.querySelectorAll(".control-btn");
+    const controlBtns = document.querySelectorAll(".control-btn");
     controlBtns.forEach((button) => {
         if (enabledButtons.includes(button.id)) {
             button.classList.remove("invisible");
@@ -199,7 +199,7 @@ function hidePopup() {
 
 function submitPainting() {
     canvas = document.getElementById("drawing-canvas");
-    painting = canvas.toDataURL("image/png");
+    const painting = canvas.toDataURL("image/png");
     let csrftoken = getCookie('csrftoken');
     fetch("/upload/", {
         method: "POST",
@@ -226,7 +226,7 @@ function selectVariant() {
             "media": answer
         })
     })
-};
+}
 
 function submitVariant(e) {
     if (e) {e.preventDefault();}
@@ -310,8 +310,8 @@ function cancelGame() {
 
 function initStage(stage) {
     let enabledButtons = [];
-    if (stage == "pregame") enabledButtons = ["start-game", "cancel-game"];
-    else if (stage != "finished") enabledButtons = ["cancel-game", "resume-game", "pause-game"];
+    if (stage === "pregame") enabledButtons = ["start-game", "cancel-game"];
+    else if (stage !== "finished") enabledButtons = ["cancel-game", "resume-game", "pause-game"];
     else enabledButtons = ["restart-game"];
     displayButtons(enabledButtons);
 }
@@ -330,7 +330,7 @@ function reconnectServer() {
 
 function addLoadingSpinner(elementId) {
     if (document.querySelector(`#${elementId} > .spinner-border`)) return;
-    element = document.getElementById(elementId);
+    const element = document.getElementById(elementId);
     let loadingSpinner = document.createElement("span");
     loadingSpinner.classList.add("spinner-border", "spinner-border-sm");
     element.appendChild(loadingSpinner);

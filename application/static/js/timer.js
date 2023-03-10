@@ -51,7 +51,7 @@ function initTimer(initial, left) {
 }
 
 function setTimer(initial, left) {
-  timer = document.getElementById("timer");
+  const timer = document.getElementById("timer");
   if (timer.innerHTML === "") initTimer(initial, left);
   else {
     timeLeft = left;
