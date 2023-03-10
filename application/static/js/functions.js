@@ -322,3 +322,15 @@ function reconnectServer() {
     reconnectionCnt = 0;
     connect();
 }
+
+function addLoadingSpinner(elementId) {
+    if (document.querySelector(`#${elementId} > .spinner-border`)) return;
+    element = document.getElementById(elementId);
+    let loadingSpinner = document.createElement("span");
+    loadingSpinner.classList.add("spinner-border", "spinner-border-sm");
+    element.appendChild(loadingSpinner);
+}
+
+function removeLoadingSpinner(elementId) {
+    document.querySelector(`#${elementId} > .spinner-border`).remove();
+}

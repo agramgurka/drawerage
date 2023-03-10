@@ -72,10 +72,12 @@ function connect() {
         if (reconnectionCnt <= maxReconnectionCnt)
             setTimeout(function () {
                 displayPopup("disconnect-popup", "Reconnecting to server");
+                addLoadingSpinner("reconnect-server");
                 connect();
             }, reconnectionDelay);
         else {
             displayPopup("disconnect-popup", "Server is unavailable");
+            removeLoadingSpinner("reconnect-server");
         }
     };
 }
