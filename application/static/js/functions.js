@@ -189,11 +189,12 @@ function displayButtons(enabledButtons) {
 })}
 
 function displayPopup(popupId, text) {
+    hidePopups();
     document.getElementById(popupId + '-text').innerHTML = text;
     document.getElementById(popupId).classList.remove("invisible");
 }
 
-function hidePopup() {
+function hidePopups() {
     document.querySelectorAll(".pop-up").forEach((popup) => {popup.classList.add("invisible")});
 }
 

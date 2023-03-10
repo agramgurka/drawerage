@@ -12,6 +12,7 @@ function connect() {
       '/'
     );
     ws.onopen = function () {
+        hidePopups();
         reconnectionCnt = 0;
         ws.send(
             JSON.stringify({
@@ -52,7 +53,7 @@ function connect() {
             displayPopup("cancel-popup", res.text);
         }
         if (command === "resume") {
-            hidePopup();
+            hidePopups();
         }
         if (command === "init_stage") {
             initStage(res.stage);
