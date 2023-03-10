@@ -46,10 +46,13 @@ function connect() {
             displayAnswer(res.variant, res.is_correct);
         }
         if (command === "pause") {
-            displayPausePopup(res.text);
+            displayPopup("pause-popup", res.text);
+        }
+        if (command === "cancel") {
+            displayPopup("cancel-popup", res.text);
         }
         if (command === "resume") {
-            hidePausePopup();
+            hidePopup();
         }
         if (command === "init_stage") {
             initStage(res.stage);
@@ -68,11 +71,11 @@ function connect() {
         reconnectionCnt++;
         if (reconnectionCnt <= maxReconnectionCnt)
             setTimeout(function () {
-                displayPausePopup("Reconnecting to server");
+                displayPopup("disconnect-popup", "Reconnecting to server");
                 connect();
             }, reconnectionDelay);
         else {
-            displayPausePopup('Server is unavailable');
+            displayPopup("disconnect-popup", "Server is unavailable");
         }
     };
 }

@@ -95,7 +95,6 @@ function initTaskScreen(taskType, task){
     return screen;
 }
 
-
 function initFinalStandingsScreen(standings) {
     let PlayerCard = null
     let PlaceCardAvatar = null;
@@ -156,7 +155,6 @@ function initFinalStandingsScreen(standings) {
     return screen;
 }
 
-
 function displayScreen(screen) {
     let allScreens = document.querySelectorAll(".game-screen");
     allScreens.forEach((scr) =>  {
@@ -177,25 +175,21 @@ function displayButtons(enabledButtons) {
     controlBtns = document.querySelectorAll(".control-btn");
     controlBtns.forEach((button) => {
         if (enabledButtons.includes(button.id)) {
-            if (button.classList.contains("invisible")) {
             button.classList.remove("invisible");
-            }
         }
         else {
-            if (!button.classList.contains("invisible")) {
-                button.classList.add("invisible");
-            }
+            button.classList.add("invisible");
         }
 
 })}
 
-function displayPausePopup(text){
-    document.getElementById("pause-text").innerHTML = text;
-    document.getElementById("pause-popup").classList.remove("invisible");
-};
+function displayPopup(popupId, text) {
+    document.getElementById(popupId + '-text').innerHTML = text;
+    document.getElementById(popupId).classList.remove("invisible");
+}
 
-function hidePausePopup() {
-    document.getElementById("pause-popup").classList.add("invisible");
+function hidePopup() {
+    document.querySelectorAll(".pop-up").forEach((popup) => {popup.classList.add("invisible")});
 }
 
 function submitPainting() {
@@ -322,4 +316,9 @@ function handleError(errorType, errorMessage) {
         console.log(errorMessage);
         displayButtons(["start-game"]);
     }
+}
+
+function reconnectServer() {
+    reconnectionCnt = 0;
+    connect();
 }
