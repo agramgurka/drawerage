@@ -67,6 +67,11 @@ function initTaskScreen(taskType, task){
         let writingTask = document.getElementById("writing-task");
         writingTask.classList.remove("invisible");
         let roundPainting = document.getElementById("round-painting");
+        if (!roundPainting){
+            roundPainting = document.createElement("img");
+            roundPainting.id = "round-painting"
+            document.getElementById("drawing-area").appendChild(roundPainting);
+        }
         roundPainting.src = task;
         let variant = document.getElementById("variant");
         variant.value = "";
@@ -96,33 +101,33 @@ function initTaskScreen(taskType, task){
 }
 
 function initFinalStandingsScreen(standings) {
-    let PlayerCard = null
-    let PlaceCardAvatar = null;
-    let PlaceCardScore = null;
+    let playerCard = null
+    let placeCardAvatar = null;
+    let placeCardScore = null;
     const scoreTable = document.querySelector("#final-standings tbody");
     scoreTable.innerHTML = "";
 
     for (let i in standings) {
         if (i < 3) {
+            playerCardAvatar = document.createElement("img");
+            playerCardAvatar.classList.add("player-card-img");
             if (i == 0) {
-               PlayerCard = document.querySelector("#first-place-card");
-               PlaceCardAvatar = document.querySelector("#first-place-card .player-card-img");
-               PlaceCardScore = document.querySelector("#first-place-card .player-card-text");
+                 playerCard = document.querySelector("#first-place-card");
+                 playerCardScore = document.querySelector("#first-place-card .player-card-text");
             }
             if (i == 1) {
-                 PlayerCard = document.querySelector("#second-place-card");
-                 PlaceCardAvatar = document.querySelector("#second-place-card .player-card-img");
-                 PlaceCardScore = document.querySelector("#second-place-card .player-card-text");
+                 playerCard = document.querySelector("#second-place-card");
+                 playerCardScore = document.querySelector("#second-place-card .player-card-text");
             }
             if (i == 2) {
-                 PlayerCard = document.querySelector("#third-place-card");
-                 PlaceCardAvatar = document.querySelector("#third-place-card .player-card-img");
-                 PlaceCardScore = document.querySelector("#third-place-card .player-card-text");
+                playerCard = document.querySelector("#third-place-card");
+                playerCardScore = document.querySelector("#third-place-card .player-card-text");
             }
-            PlaceCardAvatar.src = '/media/' + standings[i].player__avatar;
-            PlaceCardScore.innerHTML = standings[i].result;
-            PlayerCard.style.borderColor = standings[i].player__drawing_color;
-            PlayerCard.classList.remove('invisible');
+            playerCard.insertBefore(playerCardAvatar, playerCard.children[1])
+            playerCardAvatar.src = "/media/" + standings[i].player__avatar;
+            playerCardScore.innerHTML = standings[i].result;
+            playerCard.style.borderColor = standings[i].player__drawing_color;
+            playerCard.classList.remove("invisible");
         }
 
         let newRow = document.createElement("tr");
