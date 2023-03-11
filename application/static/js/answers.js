@@ -80,6 +80,7 @@ function displaySelectedBy(variant, player) {
         let playerNickname = document.createElement("p");
         playerImg.classList.add("selected-by-icon");
         playerImg.src = player.avatar;
+        playerNickname.classList.add('nickname');
         playerNickname.innerHTML = player.nickname;
         selectedBlock.appendChild(playerImg);
         selectedBlock.appendChild(playerNickname);

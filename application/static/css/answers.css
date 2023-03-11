@@ -84,6 +84,14 @@
     margin: 15px 0;
 }
 
+#variant-selects .nickname {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 8rem;
+    max-height: 3rem;
+}
+
 .selected-by-icon {
     width: 75px;
     height: 75px;
