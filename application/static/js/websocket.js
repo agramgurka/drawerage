@@ -27,7 +27,7 @@ function connect() {
             const activeScreen = res.active_screen;
             let screen = null;
             if (activeScreen === "status") {
-                screen = initStatusScreen(res.players, res.task_type)
+                screen = initStatusScreen(res.players, res.task_type, res.task)
             }
             if (activeScreen === "task") {
                 screen = initTaskScreen(res.task_type, res.task);
