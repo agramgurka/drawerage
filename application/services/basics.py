@@ -11,6 +11,11 @@ else:
     from enum import StrEnum
 
 
+DISPLAY_SELECTED_DURATION = 1  # in seconds (sync with frontend)
+WAIT_BEFORE_FLIP_DURATION = 3  # in seconds (sync with frontend)
+WAIT_BEFORE_NEXT_ANSWER = 5  # in seconds
+
+
 class Timer:
     """ game timer """
 
@@ -67,7 +72,7 @@ class StageTime(IntEnum):
     writing = 40
     selecting = 30
     results = 10
-    for_one_answer = 4
+    for_one_answer = WAIT_BEFORE_FLIP_DURATION
 
 
 class MediaType(StrEnum):

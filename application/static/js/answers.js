@@ -1,3 +1,6 @@
+const DISPLAY_SELECTED_DURATION = 1;  // sync with backend
+const WAIT_BEFORE_FLIP_DURATION = 3;  // sync with backend
+
 function initAnswersScreen(variants) {
     const screen = document.getElementById("answers-screen");
     const variantsBlock = document.getElementById("variants-block");
@@ -23,18 +26,19 @@ function displayAnswer(answer, isCorrect) {
     answerCard.classList.remove("flipped", "invisible");
 
     if (answer.selected_by.length) {
-        for (let i in answer.selected_by) {
-            var delay = 1000 * (parseInt(i) + 1);
-            setTimeout(() => displaySelectedBy(variantSelects, answer.selected_by[i]), delay);
-            if (parseInt(i) === answer.selected_by.length - 1) {
-                setTimeout(initCardBack, delay + 1000, answer, isCorrect);
-                setTimeout(flipAnswerCard, delay + 1000);
+        answer.selected_by.forEach((answerSelectedImage, i) => {
+            var delay = DISPLAY_SELECTED_DURATION * 1000 * (i + 1);
+            setTimeout(() => displaySelectedBy(variantSelects, answerSelectedImage), delay);
+            if (i === answer.selected_by.length - 1) {
+                const delayBeforeFlip = delay + WAIT_BEFORE_FLIP_DURATION * 1000;
+                setTimeout(initCardBack, delayBeforeFlip, answer, isCorrect);
+                setTimeout(flipAnswerCard, delayBeforeFlip);
             }
-        }
+        })
     }
     else {
-        setTimeout(() => initCardBack(answer, isCorrect), 1000);
-        setTimeout(flipAnswerCard, 2000);
+        setTimeout(initCardBack, DISPLAY_SELECTED_DURATION * 1000, answer, isCorrect);
+        setTimeout(flipAnswerCard, (DISPLAY_SELECTED_DURATION + WAIT_BEFORE_FLIP_DURATION) * 1000);
     }
 }
 

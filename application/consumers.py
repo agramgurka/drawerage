@@ -9,15 +9,20 @@ from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 
-from .services.basics import (Timer, GameStage, GameRole, GameScreens,
-                              RoundStage, TaskType, StageTime, MEDIA_UPLOAD_DELAY, GAME_UPDATE_DELAY)
+from .services.basics import (DISPLAY_SELECTED_DURATION, MEDIA_UPLOAD_DELAY,
+                              WAIT_BEFORE_NEXT_ANSWER, GameRole, GameScreens,
+                              GameStage, RoundStage, StageTime, TaskType,
+                              Timer)
+from .services.db_function import (calculate_results, create_results,
+                                   create_rounds, deregister_channel,
+                                   finish_game, get_current_round,
+                                   get_drawing_task, get_finished_players,
+                                   get_game_stage, get_players,
+                                   get_players_answers, get_results, get_role,
+                                   get_variants, is_game_paused, next_stage,
+                                   populate_missing_variants, register_channel,
+                                   stage_completed, switch_pause_state)
 from .services.utils import display_task_result
-from .services.db_function import (
-    get_current_round, get_drawing_task, get_game_stage, finish_game,
-    next_stage, get_players, get_role, get_variants,
-    get_results, register_channel, create_rounds, calculate_results, stage_completed,
-    create_results, is_game_paused, switch_pause_state, get_players_answers,
-    get_finished_players, populate_missing_variants, deregister_channel)
 
 logger = logging.getLogger(__name__)
 
@@ -490,8 +495,8 @@ class Game(AsyncJsonWebsocketConsumer):
                     'is_correct': is_correct
                 }
             )
-            time_for_selects = len(variant['selected_by']) or 1
-            await aio.sleep(StageTime.for_one_answer.value + time_for_selects)
+            time_for_selects = (len(variant['selected_by']) or 1) * DISPLAY_SELECTED_DURATION
+            await aio.sleep(StageTime.for_one_answer.value + time_for_selects + WAIT_BEFORE_NEXT_ANSWER)
 
     async def display_answer(self, event):
         await self.send_json({
