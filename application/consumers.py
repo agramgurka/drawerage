@@ -234,7 +234,8 @@ class Game(AsyncJsonWebsocketConsumer):
         status_updates = {
             'active_screen': GameScreens.status,
             'players': {},
-            'task_type': None
+            'task_type': None,
+            'task': None
         }
         task_updates = {
             'active_screen': GameScreens.task,
@@ -330,6 +331,7 @@ class Game(AsyncJsonWebsocketConsumer):
                 raise
             if game_round.stage == RoundStage.writing:
                 status_updates['task_type'] = TaskType.writing
+                status_updates['task'] = game_round.painting.url if game_round.painting else None
                 task_updates['task_type'] = TaskType.writing
                 task_updates['task'] = game_round.painting.url if game_round.painting else None
                 finished_players = await to_async(get_finished_players)(self.game_id, game_stage,
@@ -362,6 +364,10 @@ class Game(AsyncJsonWebsocketConsumer):
                                                                         game_round)
                 variants = {}
                 all_variants = await to_async(get_variants)(game_round)
+                shuffle(all_variants)
+
+                status_updates['task'] = [variant for variant, _ in all_variants]
+                shuffle(status_updates['task'])
                 for player in players:
                     player_variants = [
                         variant for variant, user_id in all_variants

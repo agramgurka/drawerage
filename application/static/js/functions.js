@@ -13,37 +13,69 @@ function getCookie(name) {
     return cookieValue;
 }
 
-function initStatusScreen(players, stage) {
-    const screen = document.getElementById("status-screen");
-    screen.innerHTML = "";
+function initStatusScreen(players, taskType, task) {
+    const gameStage = document.getElementById("round-stage");
+    const currentTask = document.getElementById("current-task");
+    currentTask.innerHTML = "";
+    const playersStatuses = document.getElementById("players-statuses");
+    playersStatuses.innerHTML = "";
+    const statusScreenHeader = document.createElement("h4");
+    statusScreenHeader.classList.add("text-center")
+    currentTask.appendChild(statusScreenHeader);
+
+    if (taskType === "writing") {
+        statusScreenHeader.innerHTML = "Players are guessing what is drawn here";
+        let painting = document.createElement("img");
+        painting.classList.add("mx-auto", "d-block", "painting-miniature");
+        painting.src = task;
+        painting.addEventListener("click",
+            function() {
+            this.style.width === "50%" ? this.style.width = "100%" : this.style.width = "50%"
+            }
+        )
+        currentTask.appendChild(painting);
+    }
+    else if (taskType === "selecting") {
+        statusScreenHeader.innerHTML = "Players are selecting the correct answer";
+        let variants = document.createElement("ul");
+        variants.classList.add("my-3", "mx-5");
+        for (let i in task) {
+            let variant = document.createElement("li");
+            variant.innerHTML = task[i];
+            variant.classList.add("fs-5");
+            variants.appendChild(variant);
+        }
+        currentTask.appendChild(variants);
+    }
+
     for (let i in players) {
         let statusBlock = document.createElement("div");
-        statusBlock.classList.add("status-block", "col-md-5", "text-center", "py-4");
-        let playerName = document.createElement("div");
+        statusBlock.classList.add("col-md-3", "status-block", "text-center", "py-4");
+        let playerName = document.createElement("p");
         playerName.innerHTML = i;
         playerName.classList.add("player-name");
-        let playerAvatar = document.createElement("div");
+        let playerAvatar = document.createElement("img");
+        playerAvatar.classList.add("player-avatar", "empty-avatar");
         if (players[i].avatar){
-            playerAvatar = document.createElement("img");
             playerAvatar.src = players[i].avatar;
-            playerAvatar.classList.add("player-avatar");
+            playerAvatar.classList.remove("empty-avatar");
         }
         let status = document.createElement("img");
         if (players[i].finished) {
              status.src = staticUrl + "icons/status_ok.png";
         }
         else {
-            status.classList.add('status-' + stage);
-            status.src = staticUrl + "icons/status_" + stage + ".png";
+            status.classList.add('status-' + taskType);
+            status.src = staticUrl + "icons/status_" + taskType + ".png";
         }
         status.innerHTML = players[i].finished;
         status.classList.add("status");
-        statusBlock.appendChild(playerName);
         statusBlock.appendChild(playerAvatar);
         statusBlock.appendChild(status);
-        screen.appendChild(statusBlock);
+        statusBlock.appendChild(playerName);
+        playersStatuses.appendChild(statusBlock);
     }
-    return screen;
+    return document.getElementById("status-screen");;
 };
 
 function initTaskScreen(taskType, task){
@@ -79,12 +111,14 @@ function initTaskScreen(taskType, task){
     if (taskType === "selecting"){
         let selectingTask = document.getElementById("selecting-task");
 
-        const img = document.createElement('img');
+        const img = document.createElement("img");
+        img.classList.add("mx-auto", "d-block");
         img.src = task.painting;
-        const imgContainer = document.createElement('div')
+        const imgContainer = document.getElementById("selecting-task-image");
+        imgContainer.innerHTML = "";
         imgContainer.append(img);
-        const ul = document.createElement("ul");
-        ul.classList.add("list-group");
+        const ul = document.getElementById("selecting-task-variants");
+        ul.innerHTML = "";
         task.variants.forEach((option) => {
             let optionBlock = document.createElement("li");
             optionBlock.innerHTML = option;
@@ -93,9 +127,6 @@ function initTaskScreen(taskType, task){
             ul.append(optionBlock);
         })
         selectingTask.classList.remove("invisible");
-        selectingTask.innerHTML = "";
-        selectingTask.append(imgContainer);
-        selectingTask.append(ul);
     }
     return screen;
 }

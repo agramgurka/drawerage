@@ -29,7 +29,7 @@
 </div>
 <div class="container">
     <div class="row justify-content-center">
-        <h1 class="col-sm-2" id="game-code"></h1>
+        <h1 class="col-sm-2 text-center" id="game-code"></h1>
     </div>
      <button id="start-game" type="button" class="btn btn-secondary invisible control-btn"> Start </button>
      <button id="pause-game" type="button" class="btn btn-secondary invisible control-btn"> Pause </button>
@@ -37,7 +37,12 @@
      <div class="row justify-content-center mb-2">
          <div id="timer" class=" col-3 col-sm-1"></div>
      </div>
-     <div id="status-screen" class="game-screen invisible row justify-content-around"></div>
+     <div id="status-screen" class="game-screen invisible row justify-content-around ">
+         <div class="col-md-6">
+             <div id="current-task" class="text-center"></div>
+             <div id="players-statuses" class="row justify-content-around"></div>
+         </div>
+     </div>
      <div id="task-screen" class="game-screen invisible row justify-content-center">
          <div id="drawing-task" class="task-type invisible col-md-6">
                   <div class="drawing-canvas-block">
@@ -52,7 +57,8 @@
                      <button type="button" id="submit-painting" class="btn btn btn-secondary" >Send</button>
                  </div>
          </div>
-         <div id="writing-task" class="task-type invisible col-md-6">
+         <div id="writing-task" class="task-type invisible col-md-6 text-center">
+             <h4>What is drawn here?</h4>
              <div id="drawing-area"></div>
              <div class="text-area">
                  <form id="variant-form">
@@ -65,7 +71,11 @@
                  </form>
              </div>
          </div>
-         <ul id="selecting-task" class="task-type invisible list-group col-sm-6"></ul>
+         <div id="selecting-task" class="task-type invisible col-sm-6">
+             <h4 class="text-center">Select the correct answer</h4>
+             <div id="selecting-task-image" class="text-center"></div>
+             <ul id="selecting-task-variants" class="list-group"></ul>
+         </div>
      </div>
      <div id="answers-screen" class="game-screen invisible row justify-content-between">
          <div id="variants-block" class="col-sm-5"></div>
