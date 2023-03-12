@@ -3,6 +3,14 @@ from django.db import models
 from .services.basics import GameStage, RoundStage
 
 
+class Language(models.Model):
+    code = models.CharField(max_length=10, unique=True)
+    name = models.CharField(max_length=255, unique=True)
+
+    def __str__(self):
+        return self.name
+
+
 class Player(models.Model):
     """ player's account """
 
@@ -17,6 +25,7 @@ class Player(models.Model):
 class Game(models.Model):
     """ games """
 
+    language = models.ForeignKey(Language, related_name='games', on_delete=models.CASCADE)
     code = models.CharField('code', max_length=10)
     players = models.ManyToManyField(Player, related_name='games')
     cycles = models.IntegerField('number of cycles', default=2)
@@ -68,7 +77,7 @@ class Result(models.Model):
 
 
 class Task(models.Model):
-    language = models.CharField(max_length=16)
+    language = models.ForeignKey(Language, related_name='tasks', on_delete=models.CASCADE)
     text = models.TextField(unique=True)
     source = models.CharField(max_length=255, blank=True)
     up_vote = models.IntegerField(default=0)
@@ -76,6 +85,6 @@ class Task(models.Model):
 
 
 class AutoAnswer(models.Model):
-    language = models.CharField(max_length=16)
+    language = models.ForeignKey(Language, related_name='auto_answers', on_delete=models.CASCADE)
     text = models.TextField(unique=True)
     source = models.CharField(max_length=255, blank=True)
