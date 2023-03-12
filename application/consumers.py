@@ -21,7 +21,7 @@ from .services.db_function import (calculate_results, create_results,
                                    get_players_answers, get_results, get_role,
                                    get_variants, is_game_paused, next_stage,
                                    populate_missing_variants, register_channel,
-                                   stage_completed, switch_pause_state)
+                                   stage_completed, switch_pause_state, get_host_channel)
 from .services.utils import display_task_result
 
 logger = logging.getLogger(__name__)
@@ -35,6 +35,7 @@ class Game(AsyncJsonWebsocketConsumer):
         self.previous_update = {}
         self.game_task = None
         self.paused = False
+        self.variants = {}
         super().__init__(*args, **kwargs)
 
     async def connect(self):
@@ -88,7 +89,12 @@ class Game(AsyncJsonWebsocketConsumer):
         if command == 'connected':
             if self.paused:
                 await self.game_paused({'text': 'Game is paused'})
-            await self.broadcast_updates()
+            await self.channel_layer.send(
+                await to_async(get_host_channel)(self.game_id),
+                {
+                    "type": "broadcast.updates"
+                }
+            )
             game_stage = await to_async(get_game_stage)(self.game_id)
             if self.game_role == GameRole.host:
                 await self.send_stage()
@@ -184,6 +190,7 @@ class Game(AsyncJsonWebsocketConsumer):
                             await to_async(populate_missing_variants)(game_round)
                             logger.info('start selecting')
                             await self.process_stage(GameStage.round, RoundStage.selecting)
+                            self.variants = {}
                         if game_round.stage == RoundStage.answers:
                             logger.info('show answers')
                             await aio.sleep(1)
@@ -362,19 +369,17 @@ class Game(AsyncJsonWebsocketConsumer):
                 task_updates['task_type'] = TaskType.selecting
                 finished_players = await to_async(get_finished_players)(self.game_id, game_stage,
                                                                         game_round)
-                variants = {}
-                all_variants = await to_async(get_variants)(game_round)
-                shuffle(all_variants)
-
-                status_updates['task'] = [variant for variant, _ in all_variants]
-                shuffle(status_updates['task'])
-                for player in players:
-                    player_variants = [
-                        variant for variant, user_id in all_variants
-                        if user_id != player.pk
-                    ]
-                    shuffle(player_variants)
-                    variants[player.pk] = player_variants
+                if not self.variants:
+                    self.variants['all_variants'] = await to_async(get_variants)(game_round)
+                    shuffle(self.variants['all_variants'])
+                    for player in players:
+                        player_variants = [
+                            variant for variant, user_id in self.variants['all_variants']
+                            if user_id != player.pk
+                        ]
+                        shuffle(player_variants)
+                        self.variants[player.pk] = player_variants
+                status_updates['task'] = [variant for variant, _ in self.variants['all_variants']]
                 for player in players:
                     if not player.is_host:
                         status_updates['players'][player.nickname]['finished'] = \
@@ -391,7 +396,7 @@ class Game(AsyncJsonWebsocketConsumer):
                     else:
                         task_updates['task'] = {
                             'painting': game_round.painting.url if game_round.painting else None,
-                            'variants': variants[player.pk],
+                            'variants': self.variants[player.pk],
                         }
                         await self.channel_send(
                             player.channel_name,
