@@ -148,6 +148,7 @@
 
 .player-card-img {
     width: 100%;
+    aspect-ratio: 1 / 1;
 }
 
 .player-card-title {
@@ -183,15 +184,15 @@
    background: #a17652;
 }
 
-#first-place-card {
-    width: 35%;
+.first-place-card {
+    width: 33%;
 }
 
-#second-place-card {
-    width: 30%;
+.second-place-card {
+    width: 29%;
 }
 
-#third-place-card {
+.third-place-card {
     width: 25%;
 }
 

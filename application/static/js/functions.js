@@ -132,34 +132,47 @@ function initTaskScreen(taskType, task){
 }
 
 function initFinalStandingsScreen(standings) {
-    let playerCard = null
-    let placeCardAvatar = null;
-    let placeCardScore = null;
+    const winners = document.getElementById("winners");
     const scoreTable = document.querySelector("#final-standings tbody");
     scoreTable.innerHTML = "";
+    let playerPlace = 1;
 
     for (let i in standings) {
         if (i < 3) {
-            const playerCardAvatar = document.createElement("img");
-            playerCardAvatar.classList.add("player-card-img");
-            let playerCardScore;
-            if (i == 0) {
-                 playerCard = document.querySelector("#first-place-card");
-                 playerCardScore = document.querySelector("#first-place-card .player-card-text");
+            let placeCard = document.createElement("div");
+            placeCard.classList.add("player-card");
+            let placeBadge = document.createElement("span");
+            placeBadge.classList.add("place-badge");
+            placeCardBody = document.createElement("div");
+            placeCardBody.classList.add("player-card-body");
+            let placeCardText = document.createElement("p");
+            placeCardText.classList.add("player-card-text");
+            placeCardText.innerHTML = standings[i].result;
+            let placeCardAvatar = document.createElement("img");
+            placeCardAvatar.classList.add("player-card-img");
+            placeCardAvatar.src = "/media/" + standings[i].player__avatar;
+            placeCardBody.appendChild(placeCardText);
+
+            if (playerPlace === 1) {
+                placeCard.classList.add("first-place-card");
+                placeBadge.classList.add("first-place-badge");
+                placeBadge.innerHTML = "#1";
             }
-            else if (i == 1) {
-                 playerCard = document.querySelector("#second-place-card");
-                 playerCardScore = document.querySelector("#second-place-card .player-card-text");
+            else if (playerPlace === 2) {
+                placeCard.classList.add("second-place-card");
+                placeBadge.classList.add("second-place-badge");
+                placeBadge.innerHTML = "#2";
             }
-            else if (i == 2) {
-                playerCard = document.querySelector("#third-place-card");
-                playerCardScore = document.querySelector("#third-place-card .player-card-text");
+            else if (playerPlace === 3) {
+                placeCard.classList.add("third-place-card");
+                placeBadge.classList.add("third-place-badge");
+                placeBadge.innerHTML = "#3";
             }
-            playerCard.insertBefore(playerCardAvatar, playerCard.children[1])
-            playerCardAvatar.src = "/media/" + standings[i].player__avatar;
-            playerCardScore.innerHTML = standings[i].result;
-            playerCard.style.borderColor = standings[i].player__drawing_color;
-            playerCard.classList.remove("invisible");
+            placeCard.appendChild(placeBadge);
+            placeCard.appendChild(placeCardAvatar);
+            placeCard.appendChild(placeCardBody);
+            placeCard.style.borderColor = standings[i].player__drawing_color;
+            winners.append(placeCard);
         }
 
         let newRow = document.createElement("tr");
@@ -169,11 +182,10 @@ function initFinalStandingsScreen(standings) {
         let nickname = document.createElement("p");
         let score = document.createElement("td");
 
-        place.innerHTML = parseInt(i) + 1;
+        place.innerHTML = playerPlace;
         avatar.src = '/media/' + standings[i].player__avatar;
         nickname.innerHTML = standings[i].player__nickname;
         score.innerHTML = standings[i].result;
-
 
         player.classList.add("d-flex", "align-items-center", "justify-content-center");
         avatar.classList.add("rounded-circle", "mx-2");
@@ -187,6 +199,7 @@ function initFinalStandingsScreen(standings) {
         newRow.appendChild(player);
         newRow.appendChild(score);
         scoreTable.appendChild(newRow);
+        if (parseInt(i) + 1 < standings.length && standings[i].result > standings[parseInt(i)+1].result) playerPlace++;
     }
     return document.getElementById("final-standings");
 }
