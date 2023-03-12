@@ -128,6 +128,7 @@ class Game(AsyncJsonWebsocketConsumer):
                     self.game_task.add_done_callback(display_task_result)
                     logger.info('game is started')
                 except ValueError as e:
+                    logger.exception('Error with starting game command')
                     await self.send_json(
                         {
                             'command': 'error',
