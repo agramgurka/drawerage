@@ -61,6 +61,12 @@
       const language = window.localStorage.getItem('language');
       if (language) {
         languageEl.value = language;
+      } else {
+        const browserLang =navigator.language.split('-')[0];
+        const allOptions =  [...document.querySelectorAll('#id_language option')].map((x) => x.value);
+        if (allOptions.includes(browserLang)) {
+            languageEl.value = browserLang;
+        }
       }
       nicknameEl.addEventListener('blur', (e) => {
         if (e.target.value) {
