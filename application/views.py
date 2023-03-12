@@ -15,7 +15,7 @@ from .services.db_function import (join_game, create_game, get_active_game,
                                    apply_variant, select_variant, get_game_stage,
                                    get_player_color, is_player, is_host, get_host_channel)
 from .services.basics import MediaType, GameStage
-from .forms import JoinGameForm
+from .forms import CreateGameForm, JoinGameForm
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +31,11 @@ class StartPage(FormView):
             return redirect(reverse('game'))
         return super().get(request, *args, **kwargs)
 
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['new_game_form'] = CreateGameForm()
+        return ctx
+
     def form_valid(self, form):
         game_code = form.cleaned_data['game_code']
         nickname = form.cleaned_data['player_nickname']
@@ -44,10 +49,18 @@ class StartPage(FormView):
         return reverse('game')
 
 
-class CreateGame(View):
-    def get(self, request):
-        create_game(request)
+class CreateGame(FormView):
+    form_class = CreateGameForm
+
+    def form_valid(self, form):
+        create_game(self.request, language_code=form.cleaned_data['language'])
         return redirect(reverse('game'))
+
+    def form_invalid(self, form):
+        return redirect(reverse('start_page'))
+
+    def get_success_url(self):
+        return reverse('game')
 
 
 class Game(View):

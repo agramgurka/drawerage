@@ -3,9 +3,19 @@ from django.db import models
 from .services.basics import GameStage, RoundStage
 
 
+class LanguageManager(models.Manager):
+    def get_by_natural_key(self, language_code):
+        return self.get(code=language_code)
+
+
 class Language(models.Model):
     code = models.CharField(max_length=10, unique=True)
     name = models.CharField(max_length=255, unique=True)
+
+    objects = LanguageManager()
+
+    def natural_key(self):
+        return (self.code, )
 
     def __str__(self):
         return self.name
@@ -35,6 +45,9 @@ class Game(models.Model):
                              choices=[(stage, stage.value) for stage in GameStage],
                              default=GameStage.pregame)
     is_paused = models.BooleanField('is paused', default=False)
+
+    def __str__(self):
+        return f'Game {self.code}, lang: {self.language.code}'
 
 
 class Round(models.Model):

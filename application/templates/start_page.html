@@ -18,14 +18,35 @@
         <div class="col-md-4">
             <form method="post" class="p-4 p-md-5 border rounded-3 bg-light">
                 {% csrf_token %}
-                {{ form.as_p }}
+                <p>
+                    {{ form.game_code.errors }}
+                    <label for="{{ form.game_code.id_for_label }}">{{ form.game_code.label }}:</label>
+                    {{ form.game_code }}
+                </p>
+                <p>
+                    {{ form.player_nickname.errors }}
+                    <label for="{{ form.player_nickname.id_for_label }}">{{ form.player_nickname.label }}:</label>
+                    {{ form.player_nickname }}
+                </p>
                 <div class="d-flex justify-content-between">
                     <input type="submit" class="btn btn-primary" value="Join"/>
                 </div>
             </form>
-            <div class="d-md-flex justify-content-md-end mt-3">
-                <a href="{% url 'create_game' %}" id="create_game" class="btn btn-danger">Create New</a>
-            </div>
+            <form method="POST" action="{% url 'create_game' %}">
+                {% csrf_token %}
+                <div class="row g-2 mt-4">
+                    <div class="col-md">
+                        <div class="form-floating">
+                            {{ new_game_form.language.errors }}
+                            {{ new_game_form.language }}
+                            <label for="{{ new_game_form.language.id_for_label }}">{{ new_game_form.language.label }}:</label>
+                        </div>
+                    </div>
+                    <div class="col-md gy-3 text-end">
+                        <button type="submit" id="create_game" class="btn btn-danger">Create New</button>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -36,9 +57,19 @@
       if (lastName) {
         nicknameEl.value = lastName;
       }
+      const languageEl = document.querySelector('#id_language');
+      const language = window.localStorage.getItem('language');
+      if (language) {
+        languageEl.value = language;
+      }
       nicknameEl.addEventListener('blur', (e) => {
         if (e.target.value) {
           window.localStorage.setItem('lastName', e.target.value);
+        }
+      });
+      languageEl.addEventListener('change', (e) => {
+        if (e.target.value) {
+          window.localStorage.setItem('language', e.target.value);
         }
       });
     });

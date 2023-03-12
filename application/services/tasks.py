@@ -4,7 +4,7 @@ import random
 
 import requests
 
-from ..models import Task
+from ..models import Task, Language
 
 
 class Restriction:
@@ -24,9 +24,9 @@ class TextRestriction(Restriction):
 class BaseTaskProducer:
     LANGUAGES = ()
 
-    def __init__(self, lang: str) -> None:
-        if self.LANGUAGES and lang not in self.LANGUAGES:
-            raise NotImplementedError(f'{lang} is not supported in {self.__class__}')
+    def __init__(self, lang: Language) -> None:
+        if self.LANGUAGES and lang.code not in self.LANGUAGES:
+            raise ValueError(f'{lang} is not supported in {self.__class__}')
         self.language = lang
 
     def get_task(self, restrictions=()) -> tuple[str, Any]:
@@ -57,8 +57,8 @@ class RuslangTaskProducer(BaseTaskProducer):
     LANGUAGES = ('ru',)
     URL = 'http://dict.ruslang.ru/magn.php?act=search'
 
-    def __init__(self, lang: str):
-        super().__init__(lang)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         response = requests.get(self.URL)
         self.choices = re.findall(r'<span.*?>(.*?)</span>', response.text)
 

@@ -13,7 +13,7 @@ from django.http import HttpRequest
 from django.core.files.base import ContentFile
 from thefuzz import fuzz
 
-from ..models import Player, Game, Round, Variant, Result
+from ..models import Player, Game, Round, Variant, Result, Language
 from .auto_answers import get_auto_answers
 from .basics import (DRAWING_COLORS,
                      GameRole, GameStage, RoundStage,
@@ -98,10 +98,10 @@ def is_player(game_id: int, user: User) -> bool:
     return Game.objects.filter(pk=game_id, players__user=user).exists()
 
 
-def create_game(request, cycles=2) -> int:
+def create_game(request, *, language_code, cycles=2) -> int:
     """ creates new game object and adds game's host to it """
-
-    game = Game.objects.create(code=generate_game_code(), cycles=cycles)
+    language = Language.objects.get(code=language_code)
+    game = Game.objects.create(code=generate_game_code(), cycles=cycles, language=language)
     host = create_player(game_id=game.pk, user=request.user, is_host=True)
     game.players.add(host)
     return game.pk
@@ -145,31 +145,37 @@ def join_game(request: HttpRequest, game_code: str, nickname: str) -> Optional[i
 
 
 @lru_cache()
-def get_predefined_task_producer(lang) -> PredefinedTaskProducer:
-    return PredefinedTaskProducer(lang)
+def get_predefined_task_producer(lang: Language) -> PredefinedTaskProducer | None:
+    try:
+        return PredefinedTaskProducer(lang)
+    except ValueError:
+        return None
 
 
 @lru_cache()
-def get_ruslang_task_producer(lang) -> RuslangTaskProducer:
-    return RuslangTaskProducer(lang)
+def get_ruslang_task_producer(lang) -> RuslangTaskProducer | None:
+    try:
+        return RuslangTaskProducer(lang)
+    except ValueError:
+        return None
 
 
-def available_task_producers(lang) -> list[tuple[BaseTaskProducer, int]]:
+def available_task_producers(lang: Language) -> list[tuple[BaseTaskProducer, int]]:
     """
     Returns provider and weight how ofter it should appears
     """
-    return [
+    return [x for x in [
         # predefined tasks from database
         (get_predefined_task_producer(lang), 5),
         # random phrase from ruslang
         (get_ruslang_task_producer(lang), 2),
-    ]
+    ] if x[0] is not None]
 
 
-def create_drawing_task(restrictions) -> tuple[str, Restriction]:
+def create_drawing_task(game: Game, restrictions) -> tuple[str, Restriction]:
     """ returns new painting task """
 
-    producers_with_weights = available_task_producers('ru')
+    producers_with_weights = available_task_producers(game.language)
     return random.choices(
         [x for x, _ in producers_with_weights],
         weights=[x for _, x in producers_with_weights],
@@ -185,7 +191,7 @@ def create_rounds(game_id: int) -> None:
     game = Game.objects.get(pk=game_id)
     restrictions = None
     for order_number, player in enumerate(players * game.cycles):
-        task, restrictions = create_drawing_task(restrictions)
+        task, restrictions = create_drawing_task(game, restrictions)
         game_round = Round.objects.create(
             game=game,
             order_number=order_number,
@@ -529,7 +535,7 @@ def populate_missing_variants(game_round: Round):
                 text=auto_answer.strip().lower(),
                 author=None,
             )
-            for auto_answer in get_auto_answers('ru', missing_answers)
+            for auto_answer in get_auto_answers(game_round.game.language, missing_answers)
         ])
 
 

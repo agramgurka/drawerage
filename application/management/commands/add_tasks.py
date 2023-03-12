@@ -2,7 +2,7 @@ import logging
 
 from django.core.management import BaseCommand
 
-from ...models import Task
+from ...models import Language, Task
 
 
 class Command(BaseCommand):
@@ -29,11 +29,12 @@ class Command(BaseCommand):
                 break
             contents.append(line)
 
+        language = Language.objects.get(code=lang)
         for line in contents:
             line = line.strip('\r\n .,!')
             if not line:
                 continue
             try:
-                Task.objects.create(language=lang, text=line, source=source)
+                Task.objects.create(language=language, text=line, source=source)
             except Exception:
                 logging.getLogger(__name__).exception('Problem with saving Task model occured')

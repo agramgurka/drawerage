@@ -1,7 +1,7 @@
-from ..models import AutoAnswer
+from ..models import AutoAnswer, Language
 
 
-def get_auto_answers(lang: str, number: int = 1) -> list[str]:
+def get_auto_answers(lang: Language, number: int = 1) -> list[str]:
     if number < 1:
         return []
     return list(
