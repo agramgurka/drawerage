@@ -22,6 +22,7 @@
 
 .player-avatar.empty-avatar {
     border: 1px dashed;
+    border-radius: 25%;
 }
 
 .status {

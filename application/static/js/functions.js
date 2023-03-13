@@ -54,11 +54,15 @@ function initStatusScreen(players, taskType, task) {
         let playerName = document.createElement("p");
         playerName.innerHTML = i;
         playerName.classList.add("player-name");
-        let playerAvatar = document.createElement("img");
-        playerAvatar.classList.add("player-avatar", "empty-avatar");
+        let playerAvatar;
         if (players[i].avatar){
+            playerAvatar = document.createElement("img");
+            playerAvatar.classList.add("player-avatar", "empty-avatar");
             playerAvatar.src = players[i].avatar;
             playerAvatar.classList.remove("empty-avatar");
+        } else {
+            playerAvatar = document.createElement("div");
+            playerAvatar.classList.add("player-avatar", "empty-avatar");
         }
         let status = document.createElement("img");
         if (players[i].finished) {
