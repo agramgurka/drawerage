@@ -42,6 +42,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'application.context_processors.site_settings',
             ],
         },
     },
@@ -65,7 +66,6 @@ CHANNEL_LAYERS = {
         "CONFIG": {
             "hosts": [("redis", 6379)],
         }
-
     }
 }
 
@@ -146,6 +146,8 @@ LOGGING = {
         },
     },
 }
+GAME_TITLE = 'Drawesome'
+GAME_SLOGAN = 'Draw and guess game with your friends'
 
 
 try:
