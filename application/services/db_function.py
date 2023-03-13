@@ -1,6 +1,7 @@
 import base64
 import logging
 import random
+import re
 from functools import lru_cache
 from typing import Optional
 
@@ -27,6 +28,9 @@ logger = logging.getLogger(__name__)
 
 
 MIN_SIMILARITY_RANK = 92
+
+# words should contain only cyrillic or only latin letters
+VARIANT_VALIDATION_RX = re.compile(r'((([\s0-9\u0400-\u0454\u00cb]+)\b|([0-9a-zA-Z]+)\b)[-%&_–—.!?/\\\s]*)+$')
 
 
 def generate_game_code(code_len=GAME_CODE_LEN) -> str:
@@ -390,6 +394,9 @@ def apply_variant(game_id: int, user: User, variant: str) -> None:
     player = Player.objects.get(games=game_id, user=user)
     logger.info(f'{player.nickname} uploads painting')
     variant = variant.strip().lower()[:100]
+
+    if not VARIANT_VALIDATION_RX.match(variant):
+        raise ValidationError('Variant contains words of letters from mixed alphabets')
     if not Variant.objects.filter(game_round=game_round, author=player).exists():
         existing_variants = Variant.objects.filter(game_round=game_round).values_list('text', flat=True)
         for v in existing_variants:
