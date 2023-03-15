@@ -53,14 +53,8 @@ class PredefinedTaskProducer(BaseTaskProducer):
         return task.text.lower().strip(), other_restrictions + [IdRestriction(ids=list(set(items) | {task.id}))]
 
 
-class RuslangTaskProducer(BaseTaskProducer):
-    LANGUAGES = ('ru',)
-    URL = 'http://dict.ruslang.ru/magn.php?act=search'
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        response = requests.get(self.URL)
-        self.choices = re.findall(r'<span.*?>(.*?)</span>', response.text)
+class ExternalTextTaskProvider(BaseTaskProducer):
+    choices = []
 
     def get_task(self, restrictions=None) -> tuple[str, Any]:
         if not restrictions:
@@ -76,3 +70,26 @@ class RuslangTaskProducer(BaseTaskProducer):
                 other_restrictions.append(r)
 
         return task.lower().strip(), other_restrictions + [TextRestriction(phrases=list(set(items) | {task}))]
+
+
+class RuslangTaskProducer(ExternalTextTaskProvider):
+    LANGUAGES = ('ru',)
+    URL = 'http://dict.ruslang.ru/magn.php?act=search'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        response = requests.get(self.URL)
+        self.choices = re.findall(r'<span.*?>(.*?)</span>', response.text)
+
+
+class RuslangTaskSingleNounProducer(ExternalTextTaskProvider):
+    LANGUAGES = ('ru',)
+    URL = 'http://dict.ruslang.ru/freq.php?act=show&dic=freq_s'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        response = requests.get(self.URL)
+        self.choices = re.findall(
+            r'<tr><td.*?<td>(.*?)</td>.*?</tr>',
+            response.text
+        )

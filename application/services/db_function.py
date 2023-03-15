@@ -22,7 +22,8 @@ from .basics import (DRAWING_COLORS,
                      POINTS_FOR_RECOGNITION,
                      POINTS_FOR_CORRECT_RECOGNITION,
                      GAME_CODE_LEN, USERNAME_LEN, CODE_CHARS,)
-from .tasks import BaseTaskProducer, PredefinedTaskProducer, Restriction, RuslangTaskProducer
+from .tasks import BaseTaskProducer, PredefinedTaskProducer, Restriction, RuslangTaskProducer, \
+    RuslangTaskSingleNounProducer
 
 logger = logging.getLogger(__name__)
 
@@ -169,6 +170,14 @@ def get_ruslang_task_producer(lang) -> RuslangTaskProducer | None:
         return None
 
 
+@lru_cache()
+def get_ruslang_nouns_task_producer(lang) -> RuslangTaskSingleNounProducer | None:
+    try:
+        return RuslangTaskSingleNounProducer(lang)
+    except ValueError:
+        return None
+
+
 def available_task_producers(lang: Language) -> list[tuple[BaseTaskProducer, int]]:
     """
     Returns provider and weight how ofter it should appears
@@ -178,6 +187,8 @@ def available_task_producers(lang: Language) -> list[tuple[BaseTaskProducer, int
         (get_predefined_task_producer(lang), 5),
         # random phrase from ruslang
         (get_ruslang_task_producer(lang), 2),
+        # random noun from ruslang
+        (get_ruslang_nouns_task_producer(lang), 2),
     ] if x[0] is not None]
 
 
