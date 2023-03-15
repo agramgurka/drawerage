@@ -206,7 +206,6 @@ function initFinalStandingsScreen(standings) {
         scoreTable.appendChild(newRow);
         if (parseInt(i) + 1 < standings.length && standings[i].result > standings[parseInt(i)+1].result) playerPlace++;
     }
-    window.removeEventListener("beforeunload", beforeUnloadListener);
     return document.getElementById("final-standings");
 }
 

@@ -40,6 +40,7 @@ function connect() {
             }
             if (activeScreen === "final_standings") {
                 screen = initFinalStandingsScreen(res.results);
+                window.removeEventListener("beforeunload", beforeUnloadListener);
             }
             displayScreen(screen);
         }
@@ -51,6 +52,7 @@ function connect() {
         }
         if (command === "cancel") {
             displayPopup("cancel-popup", res.text);
+            window.removeEventListener("beforeunload", beforeUnloadListener);
         }
         if (command === "resume") {
             hidePopups();
