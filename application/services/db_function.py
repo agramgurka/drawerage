@@ -367,7 +367,7 @@ def upload_avatar(game_id: int, user: User, media: str) -> None:
         player.save()
         logger.info(f'{player.nickname} uploaded avatar')
     else:
-        raise ValidationError(f'{player.nickname} has already uploaded avatar')
+        raise ValidationError(f'{player.nickname} has already uploaded avatar', code='duplicate')
 
 
 def upload_painting(game_id: int, user: User, media) -> None:
@@ -382,7 +382,10 @@ def upload_painting(game_id: int, user: User, media) -> None:
         game_round.save()
         logger.info(f'{player.nickname} uploaded painting for {game_round.order_number} round')
     else:
-        raise ValidationError(f'{player.nickname} has already uploaded painting for {game_round.order_number} round')
+        raise ValidationError(
+            f'{player.nickname} has already uploaded painting for {game_round.order_number} round',
+            code='duplicate',
+        )
 
 
 def apply_variant(game_id: int, user: User, variant: str) -> None:
@@ -394,14 +397,21 @@ def apply_variant(game_id: int, user: User, variant: str) -> None:
     variant = variant.strip().lower()[:100]
 
     if not VARIANT_VALIDATION_RX.match(variant):
-        raise ValidationError('Variant contains words of letters from mixed alphabets')
+        logger.warning(f'Variant "{variant} ({variant.encode()}) doesn\'t match validation regexp"')
+        raise ValidationError(
+            'Your variant contains words of letters from mixed alphabets',
+            code='invalid_alphabet',
+        )
     if not Variant.objects.filter(game_round=game_round, author=player).exists():
         existing_variants = Variant.objects.filter(game_round=game_round).values_list('text', flat=True)
         for v in existing_variants:
             ratio = fuzz.ratio(variant, v)
             logger.debug(f'Compare "{variant}" with "{v}": ratio is {ratio}')
             if ratio >= MIN_SIMILARITY_RANK:
-                raise ValidationError('Variant is similar to existing variants')
+                raise ValidationError(
+                    'Your variant is too close to someone\'s variant or to the correct answer',
+                    code='duplicate',
+                )
         Variant.objects.create(
             text=variant,
             game_round=game_round,
@@ -422,7 +432,7 @@ def select_variant(game_id: int, user: User, answer) -> None:
         variant.selected_by.add(player)
         logger.info(f'{player.nickname} selected variant {variant.text}')
     else:
-        raise ValidationError(f'{player.nickname} has already selected variant')
+        raise ValidationError(f'{player.nickname} has already selected variant', code='duplicate')
 
 
 def calculate_results(game_id: int) -> None:

@@ -304,8 +304,8 @@ function submitVariant(e) {
             return response.json();
         })
         .then((data) => {
-            if (data.status === 'duplicate' && !!e) {
-                errorEl.innerHTML = "You variant is too close to someone's variant or to the correct answer";
+            if (data.status !== 'success' && !!e) {
+                errorEl.innerHTML = data.message;
             }
         });
     }

@@ -86,6 +86,7 @@ class MediaUpload(View):
         game_id = data.get('game_id')
         media = data.get('media')
         status = 'error'
+        message = None
         status_code = 200
         if media_type == MediaType.painting_task:
             game_stage = await to_async(get_game_stage)(game_id)
@@ -93,29 +94,33 @@ class MediaUpload(View):
                 try:
                     await to_async(upload_avatar)(game_id, request.user, media)
                     status = 'success'
-                except ValidationError:
-                    status = 'duplicate'
+                except ValidationError as e:
+                    status = e.code
+                    message = e.message
                     status_code = 400
             if game_stage == GameStage.preround:
                 try:
                     await to_async(upload_painting)(game_id, request.user, media)
                     status = 'success'
-                except ValidationError:
-                    status = 'duplicate'
+                except ValidationError as e:
+                    status = e.code
+                    message = e.message
                     status_code = 400
         if media_type == MediaType.variant:
             try:
                 await to_async(apply_variant)(game_id, request.user, media)
                 status = 'success'
-            except ValidationError:
-                status = 'duplicate'
+            except ValidationError as e:
+                status = e.code
+                message = e.message
                 status_code = 400
         if media_type == MediaType.answer:
             try:
                 await to_async(select_variant)(game_id, request.user, media)
                 status = 'success'
-            except ValidationError:
-                status = 'duplicate'
+            except ValidationError as e:
+                status = e.code
+                message = e.message
                 status_code = 400
         if status_code == 200:
             host_channel = await to_async(get_host_channel)(game_id)
@@ -126,5 +131,4 @@ class MediaUpload(View):
                     'type': 'broadcast.updates'
                 }
             )
-        return JsonResponse({'status': status}, status=status_code)
-
+        return JsonResponse({'status': status, 'message': message}, status=status_code)
