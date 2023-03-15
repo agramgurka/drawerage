@@ -66,6 +66,9 @@ function connect() {
         if (command === "error") {
             handleError(res.error_type, res.error_message);
         }
+        if (command === "collect_likes") {
+            collectLikes();
+        }
     };
     ws.onerror = function(err) {
         ws.close();

@@ -186,11 +186,13 @@ function initFinalStandingsScreen(standings) {
         let avatar = document.createElement("img");
         let nickname = document.createElement("p");
         let score = document.createElement("td");
+        let likes_cnt = document.createElement("td");
 
         place.innerHTML = playerPlace;
         avatar.src = '/media/' + standings[i].player__avatar;
         nickname.innerHTML = standings[i].player__nickname;
         score.innerHTML = standings[i].result;
+        likes_cnt.innerHTML = standings[i].likes_cnt;
 
         player.classList.add("d-flex", "align-items-center", "justify-content-center");
         avatar.classList.add("rounded-circle", "mx-2");
@@ -203,6 +205,7 @@ function initFinalStandingsScreen(standings) {
         newRow.appendChild(place);
         newRow.appendChild(player);
         newRow.appendChild(score);
+        newRow.appendChild(likes_cnt);
         scoreTable.appendChild(newRow);
         if (parseInt(i) + 1 < standings.length && standings[i].result > standings[parseInt(i)+1].result) playerPlace++;
     }
@@ -388,4 +391,28 @@ function addLoadingSpinner(elementId) {
 
 function removeLoadingSpinner(elementId) {
     document.querySelector(`#${elementId} > .spinner-border`).remove();
+}
+
+function collectLikes() {
+    likeCheckboxes = document.querySelectorAll(".like");
+    likes = [];
+    likeCheckboxes.forEach(
+        (checkbox) => {
+            if (checkbox.checked)
+                likes.push(parseInt(checkbox.id));
+        }
+    );
+    if (likes.length) {
+        let csrftoken = getCookie('csrftoken');
+        fetch(window.location.origin + "/upload/", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: {"X-CSRFToken": csrftoken},
+            body: JSON.stringify({
+                "game_id": gameId,
+                "media_type": "likes",
+                "media": likes,
+            })
+        })
+    }
 }

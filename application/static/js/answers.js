@@ -7,7 +7,21 @@ function initAnswersScreen(variants) {
     variantsBlock.innerHTML = "";
     for (let i in variants) {
         let variant = document.createElement("div");
-        variant.innerHTML = variants[i];
+        variant.classList.add("d-flex", "align-items-baseline");
+        let variantText = document.createElement("p");
+        variantText.innerHTML = variants[i].text;
+        variant.appendChild(variantText);
+        if (variants[i].likable) {
+            let like = document.createElement("input");
+            like.type = "checkbox";
+            like.classList.add("btn-check", "like");
+            like.id = variants[i].id;
+            let likeLable = document.createElement("label");
+            likeLable.classList.add("btn", "like-btn", "fa", "fa-thumbs-up");
+            likeLable.htmlFor=variants[i].id;
+            variant.appendChild(like);
+            variant.appendChild(likeLable);
+        }
         variantsBlock.append(variant);
     }
     let answerCard = document.querySelector(".answer-card-inner");

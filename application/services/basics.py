@@ -79,6 +79,7 @@ class MediaType(StrEnum):
     painting_task = 'painting'
     variant = 'variant'
     answer = 'answer'
+    likes = 'likes'
 
 
 colors_file = os.path.join(

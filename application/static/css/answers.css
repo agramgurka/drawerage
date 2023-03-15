@@ -97,3 +97,23 @@
     height: 75px;
     margin: 15px;
 }
+
+.like-btn {
+    color: gray;
+}
+
+.btn-check + .like-btn:hover {
+    color: lightgray;
+}
+
+.btn-check:checked + .like-btn:hover {
+    color: #98fb98;
+}
+
+.btn-check:checked + .like-btn  {
+    color: #00ff00;
+    border: none;
+}
+
+
+

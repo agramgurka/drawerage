@@ -13,14 +13,14 @@ from .services.basics import (DISPLAY_SELECTED_DURATION, MEDIA_UPLOAD_DELAY,
                               WAIT_BEFORE_NEXT_ANSWER, GameRole, GameScreens,
                               GameStage, RoundStage, StageTime, TaskType,
                               Timer)
-from .services.db_function import (calculate_results, create_results,
-                                   create_rounds, deregister_channel,
-                                   finish_game, get_current_round,
-                                   get_drawing_task, get_finished_players,
-                                   get_game_stage, get_host_channel,
-                                   get_players, get_players_answers,
-                                   get_results, get_role, get_variants,
-                                   is_game_paused, next_stage,
+from .services.db_function import (calculate_likes, calculate_results,
+                                   create_results, create_rounds,
+                                   deregister_channel, finish_game,
+                                   get_current_round, get_drawing_task,
+                                   get_finished_players, get_game_stage,
+                                   get_host_channel, get_players,
+                                   get_players_answers, get_results, get_role,
+                                   get_variants, is_game_paused, next_stage,
                                    populate_missing_variants, register_channel,
                                    stage_completed, switch_pause_state)
 from .services.utils import display_task_result
@@ -268,9 +268,14 @@ class Game(AsyncJsonWebsocketConsumer):
                 }
 
         if game_stage == GameStage.finished:
-            results = await to_async(get_results)(self.game_id)
             result_updates['active_screen'] = GameScreens.final_standings
-            result_updates['results'] = results
+            final_results = []
+            for result in await to_async(get_results)(self.game_id):
+                result['likes_cnt'] = await to_async(calculate_likes)(result['player__pk'])
+                result.pop('player__pk')
+                result.pop('round_increment')
+                final_results.append(result)
+            result_updates['results'] = final_results
             await self.send_stage()
             await self.channel_layer.group_send(
                 self.global_group,
@@ -376,12 +381,12 @@ class Game(AsyncJsonWebsocketConsumer):
                     shuffle(self.variants['all_variants'])
                     for player in players:
                         player_variants = [
-                            variant for variant, user_id in self.variants['all_variants']
+                            variant for _, variant, user_id in self.variants['all_variants']
                             if user_id != player.pk
                         ]
                         shuffle(player_variants)
                         self.variants[player.pk] = player_variants
-                status_updates['task'] = [variant for variant, _ in self.variants['all_variants']]
+                status_updates['task'] = [variant for _, variant, _ in self.variants['all_variants']]
                 for player in players:
                     if not player.is_host:
                         status_updates['players'][player.nickname]['finished'] = \
@@ -409,18 +414,28 @@ class Game(AsyncJsonWebsocketConsumer):
                         )
             elif game_round.stage == RoundStage.answers:
                 answers = await to_async(get_variants)(game_round)
-                answers = [variant for variant, _ in answers]
                 shuffle(answers)
-                answers_updates['variants'] = answers
-                await self.channel_layer.group_send(
-                    self.global_group,
-                    {
-                        'type': 'send.update',
-                        **answers_updates
-                    }
-                )
+                for player in players:
+                    player_answers = [
+                        {
+                            'id': pk,
+                            'text': variant,
+                            'likable': not player.is_host and player.pk != author_id
+                        }
+                        for pk, variant, author_id in answers
+                    ]
+                    answers_updates['variants'] = player_answers
+                    await self.channel_send(
+                        player.channel_name,
+                        {
+                            'type': 'send.update',
+                            **answers_updates
+                        }
+                    )
             elif game_round.stage == RoundStage.results:
-                results = await to_async(get_results)(self.game_id)
+                results = []
+                for result in await to_async(get_results)(self.game_id):
+                    result.pop('player__pk')
                 result_updates['results'] = results
                 await self.channel_layer.group_send(
                     self.global_group,
@@ -510,6 +525,17 @@ class Game(AsyncJsonWebsocketConsumer):
             )
             time_for_selects = (len(variant['selected_by']) or 1) * DISPLAY_SELECTED_DURATION
             await aio.sleep(StageTime.for_one_answer.value + time_for_selects + WAIT_BEFORE_NEXT_ANSWER)
+        await self.channel_layer.group_send(
+            self.global_group,
+            {
+                'type': 'collect.likes',
+            }
+        )
+
+    async def collect_likes(self, event):
+        await self.send_json({
+            'command': 'collect_likes'
+        })
 
     async def display_answer(self, event):
         await self.send_json({

@@ -8,21 +8,19 @@ from typing import Optional
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.files.base import ContentFile
-from django.db.models import Count, F, Q
+from django.db.models import Count, F, Q, Sum
 from django.http import HttpRequest
 from more_itertools import distinct_combinations
 from thefuzz import fuzz
 
 from ..models import Game, Language, Player, Result, Round, Variant
 from .auto_answers import get_auto_answers
-from .basics import (DRAWING_COLORS,
-                     GameRole, GameStage, RoundStage,
-                     POINTS_FOR_CORRECT_ANSWER,
-                     POINTS_FOR_RECOGNITION,
-                     POINTS_FOR_CORRECT_RECOGNITION,
-                     GAME_CODE_LEN, USERNAME_LEN, CODE_CHARS,)
-from .tasks import BaseTaskProvider, PredefinedTaskProvider, Restriction, RuslangTaskProvider, \
-    RuslangTaskSingleNounProvider
+from .basics import (CODE_CHARS, DRAWING_COLORS, GAME_CODE_LEN,
+                     POINTS_FOR_CORRECT_ANSWER, POINTS_FOR_CORRECT_RECOGNITION,
+                     POINTS_FOR_RECOGNITION, USERNAME_LEN, GameRole, GameStage,
+                     RoundStage)
+from .tasks import (BaseTaskProvider, PredefinedTaskProvider, Restriction,
+                    RuslangTaskProvider, RuslangTaskSingleNounProvider)
 
 logger = logging.getLogger(__name__)
 
@@ -306,14 +304,14 @@ def get_variants(game_round: Round) -> list[tuple[str, int | None]]:
 
     return list(Variant.objects.filter(
         game_round=game_round,
-    ).order_by('id').values_list('text', 'author_id'))
+    ).order_by('id').values_list('id', 'text', 'author_id'))
 
 
 def get_results(game: Game):
     """ returns game's results """
 
     return list(Result.objects.filter(game=game).values(
-        'player__nickname', 'player__avatar', 'player__drawing_color', 'result', 'round_increment'
+        'player__pk', 'player__nickname', 'player__avatar', 'player__drawing_color', 'result', 'round_increment'
     ))
 
 
@@ -575,3 +573,11 @@ def is_host(game_id: int, user: User) -> bool:
 
 def get_host_channel(game_id: int) -> str:
     return Player.objects.get(game_id=game_id, is_host=True).channel_name
+
+
+def apply_likes(likes: list[int]):
+    Variant.objects.select_for_update().filter(pk__in=likes).update(likes_cnt=F('likes_cnt') + 1)
+
+
+def calculate_likes(player: Player) -> int:
+    return Variant.objects.filter(author=player).aggregate(Sum('likes_cnt'))['likes_cnt__sum']
