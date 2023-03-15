@@ -69,7 +69,7 @@ class GameRole(StrEnum):
 
 class StageTime(IntEnum):
     preround = 120
-    writing = 40
+    writing = 50
     selecting = 30
     results = 10
     for_one_answer = WAIT_BEFORE_FLIP_DURATION
