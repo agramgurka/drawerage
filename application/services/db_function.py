@@ -30,7 +30,12 @@ logger = logging.getLogger(__name__)
 MIN_SIMILARITY_RANK = 92
 
 # words should contain only cyrillic or only latin letters
-VARIANT_VALIDATION_RX = re.compile(r'((([\s0-9\u0400-\u0454\u00cb]+)\b|([0-9a-zA-Z]+)\b)[-%&_–—.!?/\\\s]*)+$')
+VARIANT_VALIDATION_RX = re.compile(
+    r'(('
+    r'([\s0-9\u0400-\u0454\u00cb]+)\b|'
+    r'([0-9a-zA-Z]+)\b'
+    r')[-%&_–—.!?;()[\]<>#$/\\\s]*)+$',
+)
 
 
 def generate_game_code(code_len=GAME_CODE_LEN) -> str:
