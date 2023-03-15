@@ -137,6 +137,7 @@ function initTaskScreen(taskType, task){
 
 function initFinalStandingsScreen(standings) {
     const winners = document.getElementById("winners");
+    winners.innerHTML = "";
     const scoreTable = document.querySelector("#final-standings tbody");
     scoreTable.innerHTML = "";
     let playerPlace = 1;
