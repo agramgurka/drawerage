@@ -21,6 +21,7 @@
 }
 
 .player-avatar.empty-avatar {
+    display: inline-block;
     border: 1px dashed;
     border-radius: 25%;
 }
