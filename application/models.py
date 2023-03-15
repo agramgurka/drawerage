@@ -49,23 +49,8 @@ class Player(models.Model):
     channel_name = models.CharField('ws channel name', max_length=100, null=True, default=None)
     drawing_color = models.CharField('drawing color', max_length=7, null=True)
 
-
-class Game(models.Model):
-    """ games """
-
-    language = models.ForeignKey(Language, related_name='games', on_delete=models.CASCADE)
-    code = models.CharField('code', max_length=10)
-    players = models.ManyToManyField(Player, related_name='games')
-    cycles = models.IntegerField('number of cycles', default=2)
-    stage = models.CharField(
-                             'game stage',
-                             max_length=20,
-                             choices=[(stage, stage.value) for stage in GameStage],
-                             default=GameStage.pregame)
-    is_paused = models.BooleanField('is paused', default=False)
-
     def __str__(self):
-        return f'Game {self.code}, lang: {self.language.code}'
+        return self.nickname or '<HOST>'
 
 
 class Round(models.Model):
