@@ -22,8 +22,8 @@ from .basics import (DRAWING_COLORS,
                      POINTS_FOR_RECOGNITION,
                      POINTS_FOR_CORRECT_RECOGNITION,
                      GAME_CODE_LEN, USERNAME_LEN, CODE_CHARS,)
-from .tasks import BaseTaskProducer, PredefinedTaskProducer, Restriction, RuslangTaskProducer, \
-    RuslangTaskSingleNounProducer
+from .tasks import BaseTaskProvider, PredefinedTaskProvider, Restriction, RuslangTaskProvider, \
+    RuslangTaskSingleNounProvider
 
 logger = logging.getLogger(__name__)
 
@@ -155,47 +155,47 @@ def join_game(request: HttpRequest, game_code: str, nickname: str) -> Optional[i
 
 
 @lru_cache()
-def get_predefined_task_producer(lang: Language) -> PredefinedTaskProducer | None:
+def get_predefined_task_provider(lang: Language) -> PredefinedTaskProvider | None:
     try:
-        return PredefinedTaskProducer(lang)
+        return PredefinedTaskProvider(lang)
     except ValueError:
         return None
 
 
 @lru_cache()
-def get_ruslang_task_producer(lang) -> RuslangTaskProducer | None:
+def get_ruslang_task_provider(lang) -> RuslangTaskProvider | None:
     try:
-        return RuslangTaskProducer(lang)
+        return RuslangTaskProvider(lang)
     except ValueError:
         return None
 
 
 @lru_cache()
-def get_ruslang_nouns_task_producer(lang) -> RuslangTaskSingleNounProducer | None:
+def get_ruslang_nouns_task_provider(lang) -> RuslangTaskSingleNounProvider | None:
     try:
-        return RuslangTaskSingleNounProducer(lang)
+        return RuslangTaskSingleNounProvider(lang)
     except ValueError:
         return None
 
 
-def available_task_producers(lang: Language) -> list[tuple[BaseTaskProducer, int]]:
+def available_task_providers(lang: Language) -> list[tuple[BaseTaskProvider, int]]:
     """
     Returns provider and weight how ofter it should appears
     """
     return [x for x in [
         # predefined tasks from database
-        (get_predefined_task_producer(lang), 5),
+        (get_predefined_task_provider(lang), 5),
         # random phrase from ruslang
-        (get_ruslang_task_producer(lang), 2),
+        (get_ruslang_task_provider(lang), 2),
         # random noun from ruslang
-        (get_ruslang_nouns_task_producer(lang), 2),
+        (get_ruslang_nouns_task_provider(lang), 2),
     ] if x[0] is not None]
 
 
 def create_drawing_task(game: Game, restrictions) -> tuple[str, Restriction]:
     """ returns new painting task """
 
-    producers_with_weights = available_task_producers(game.language)
+    producers_with_weights = available_task_providers(game.language)
     return random.choices(
         [x for x, _ in producers_with_weights],
         weights=[x for _, x in producers_with_weights],

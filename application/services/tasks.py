@@ -21,7 +21,7 @@ class TextRestriction(Restriction):
         self.values = phrases
 
 
-class BaseTaskProducer:
+class BaseTaskProvider:
     LANGUAGES = ()
 
     def __init__(self, lang: Language) -> None:
@@ -33,7 +33,7 @@ class BaseTaskProducer:
         raise NotImplementedError()
 
 
-class PredefinedTaskProducer(BaseTaskProducer):
+class PredefinedTaskProvider(BaseTaskProvider):
     def get_task(self, restrictions=None):
         if not restrictions:
             restrictions = []
@@ -53,7 +53,7 @@ class PredefinedTaskProducer(BaseTaskProducer):
         return task.text.lower().strip(), other_restrictions + [IdRestriction(ids=list(set(items) | {task.id}))]
 
 
-class ExternalTextTaskProvider(BaseTaskProducer):
+class ExternalTextTaskProvider(BaseTaskProvider):
     choices = []
 
     def get_task(self, restrictions=None) -> tuple[str, Any]:
@@ -72,7 +72,7 @@ class ExternalTextTaskProvider(BaseTaskProducer):
         return task.lower().strip(), other_restrictions + [TextRestriction(phrases=list(set(items) | {task}))]
 
 
-class RuslangTaskProducer(ExternalTextTaskProvider):
+class RuslangTaskProvider(ExternalTextTaskProvider):
     LANGUAGES = ('ru',)
     URL = 'http://dict.ruslang.ru/magn.php?act=search'
 
@@ -82,7 +82,7 @@ class RuslangTaskProducer(ExternalTextTaskProvider):
         self.choices = re.findall(r'<span.*?>(.*?)</span>', response.text)
 
 
-class RuslangTaskSingleNounProducer(ExternalTextTaskProvider):
+class RuslangTaskSingleNounProvider(ExternalTextTaskProvider):
     LANGUAGES = ('ru',)
     URL = 'http://dict.ruslang.ru/freq.php?act=show&dic=freq_s'
 
