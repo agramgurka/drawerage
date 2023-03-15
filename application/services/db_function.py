@@ -59,13 +59,13 @@ def create_user() -> User:
 def register_channel(game_id: int, user: User, channel_name: str):
     """ registers player's websocket channel name"""
 
-    Player.objects.filter(games=game_id, user=user).update(channel_name=channel_name)
+    Player.objects.filter(game_id=game_id, user=user).update(channel_name=channel_name)
 
 
 def deregister_channel(game_id: int, user: User):
     """ deregisters player's websocket channel name"""
 
-    Player.objects.filter(games=game_id, user=user).update(channel_name=None)
+    Player.objects.filter(game_id=game_id, user=user).update(channel_name=None)
 
 
 def create_player(game_id: int, user: User, nickname: str = None, is_host: bool = False) -> Player:
@@ -75,7 +75,7 @@ def create_player(game_id: int, user: User, nickname: str = None, is_host: bool 
     if not is_host:
         color = pick_color(game_id)
 
-    return Player.objects.create(user=user, nickname=nickname, is_host=is_host, drawing_color=color)
+    return Player.objects.create(game_id=game_id, user=user, nickname=nickname, is_host=is_host, drawing_color=color)
 
 
 def pick_color(game_id: int) -> str:
@@ -94,7 +94,7 @@ def pick_color(game_id: int) -> str:
             ]
             random.shuffle(all_colors)
         color = all_colors.pop()
-        if not Player.objects.filter(games=game_id, drawing_color=color).exists():
+        if not Player.objects.filter(game_id=game_id, drawing_color=color).exists():
             return color
 
 
@@ -114,7 +114,7 @@ def create_game(request, *, language_code, cycles=2) -> int:
 def get_player_color(game_id: int, user: User) -> str:
     """ returns player's drawing color """
 
-    return Player.objects.get(games=game_id, user=user).drawing_color
+    return user.player_set.get(game_id=game_id).drawing_color
 
 
 def get_active_game(user: User) -> Optional[int]:
@@ -140,7 +140,7 @@ def join_game(request: HttpRequest, game_code: str, nickname: str) -> Optional[i
 
     game = Game.objects.get(code=game_code.upper())
     if game.stage == GameStage.pregame:
-        if not Player.objects.filter(user=request.user, games=game).exists():
+        if not request.user.player_set.filter(game=game).exists():
             player = create_player(game_id=game.pk, user=request.user, nickname=nickname)
             game.players.add(player)
         return game.pk
@@ -232,8 +232,8 @@ def get_players(game_id: int, host: bool = False) -> list:
     """ returns list of players """
 
     if host:
-        return list(Player.objects.filter(games=game_id))
-    return list(Player.objects.filter(games=game_id, is_host=False))
+        return list(Player.objects.filter(game_id=game_id))
+    return list(Player.objects.filter(game_id=game_id, is_host=False))
 
 
 def get_game_stage(game_id: int) -> Optional[str]:
@@ -247,12 +247,10 @@ def get_game_stage(game_id: int) -> Optional[str]:
 def get_role(user: User, game_id: int) -> Optional[GameRole]:
     """ returns player game role: player or host"""
 
-    if Player.objects.filter(games=game_id, user=user, is_host=True).exists():
-        return GameRole.host
-    if Player.objects.filter(games=game_id, user=user, is_host=False).exists():
-        return GameRole.player
-    else:
+    player = Player.objects.filter(game_id=game_id, user=user).first()
+    if not player:
         return None
+    return GameRole.host if player.is_host else GameRole.player
 
 
 def get_finished_players(game_id: int, game_stage: GameStage, game_round: Round = None) -> list:
@@ -361,7 +359,7 @@ def next_stage(game_id: int):
 def upload_avatar(game_id: int, user: User, media: str) -> None:
     """ uploads player's avatar """
 
-    player = Player.objects.get(games=game_id, user=user)
+    player = user.player_set.get(game_id=game_id)
     if not player.avatar:
         media = media.replace('data:image/png;base64,', '')
         avatar = ContentFile(base64.b64decode(media), f'{game_id}_{player.nickname}.png')
@@ -375,7 +373,7 @@ def upload_avatar(game_id: int, user: User, media: str) -> None:
 def upload_painting(game_id: int, user: User, media) -> None:
     """ uploads player's painting """
 
-    player = Player.objects.get(games=game_id, user=user)
+    player = user.player_set.get(game_id=game_id)
     game_round = Round.objects.filter(game=game_id, painter=player, stage=RoundStage.not_started).first()
     if not game_round.painting:
         media = media.replace('data:image/png;base64,', '')
@@ -391,7 +389,7 @@ def apply_variant(game_id: int, user: User, variant: str) -> None:
     """ applies player's variant """
 
     game_round = get_current_round(game_id)
-    player = Player.objects.get(games=game_id, user=user)
+    player = user.player_set.get(game_id=game_id)
     logger.info(f'{player.nickname} uploads painting')
     variant = variant.strip().lower()[:100]
 
@@ -418,7 +416,7 @@ def select_variant(game_id: int, user: User, answer) -> None:
     """ applies which variant player has chosen"""
 
     game_round = get_current_round(game_id)
-    player = Player.objects.get(games=game_id, user=user)
+    player = user.player_set.get(game_id=game_id)
     if not Variant.objects.filter(game_round=game_round, selected_by=player).exists():
         variant = Variant.objects.get(game_round=game_round, text=answer)
         variant.selected_by.add(player)
@@ -461,7 +459,7 @@ def calculate_results(game_id: int) -> None:
 def stage_completed(game_id: int, game_stage: GameStage, round_stage: RoundStage) -> bool:
     """ checks if current game stage is completed"""
 
-    players_cnt = Player.objects.filter(games=game_id, is_host=False).count()
+    players_cnt = Player.objects.filter(game_id=game_id, is_host=False).count()
     if game_stage == GameStage.preround:
         return Round.objects.filter(
             game=game_id,
@@ -547,8 +545,8 @@ def populate_missing_variants(game_round: Round):
 
 
 def is_host(game_id: int, user: User) -> bool:
-    return Player.objects.filter(games=game_id, user=user, is_host=True).exists()
+    return Player.objects.filter(game_id=game_id, user=user, is_host=True).exists()
 
 
 def get_host_channel(game_id: int) -> str:
-    return Player.objects.get(games=game_id, is_host=True).channel_name
+    return Player.objects.get(game_id=game_id, is_host=True).channel_name

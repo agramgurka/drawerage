@@ -21,10 +21,28 @@ class Language(models.Model):
         return self.name
 
 
+class Game(models.Model):
+    """ games """
+
+    language = models.ForeignKey(Language, related_name='games', on_delete=models.CASCADE)
+    code = models.CharField('code', max_length=10)
+    cycles = models.IntegerField('number of cycles', default=2)
+    stage = models.CharField(
+                             'game stage',
+                             max_length=20,
+                             choices=[(stage, stage.value) for stage in GameStage],
+                             default=GameStage.pregame)
+    is_paused = models.BooleanField('is paused', default=False)
+
+    def __str__(self):
+        return f'Game {self.code}, lang: {self.language.code}'
+
+
 class Player(models.Model):
     """ player's account """
 
     user = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
+    game = models.ForeignKey(Game, related_name='players', on_delete=models.CASCADE)
     is_host = models.BooleanField('is player a host')
     nickname = models.CharField('nickname', max_length=100, null=True)
     avatar = models.ImageField(upload_to='')
