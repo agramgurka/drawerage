@@ -13,11 +13,12 @@ from django.views.generic import FormView
 
 from .forms import CreateGameForm, JoinGameForm
 from .services.basics import GameStage, MediaType
-from .services.db_function import (apply_variant, create_game, get_active_game,
-                                   get_game_code, get_game_stage,
-                                   get_host_channel, get_player_color, is_host,
-                                   is_player, join_game, select_variant,
-                                   upload_avatar, upload_painting)
+from .services.db_function import (apply_likes, apply_variant, create_game,
+                                   get_active_game, get_game_code,
+                                   get_game_stage, get_host_channel,
+                                   get_player_color, is_host, is_player,
+                                   join_game, select_variant, upload_avatar,
+                                   upload_painting)
 
 logger = logging.getLogger(__name__)
 
@@ -120,6 +121,14 @@ class MediaUpload(View):
             try:
                 await to_async(select_variant)(game_id, request.user, media)
                 status = 'success'
+            except ValidationError as e:
+                status = e.code
+                message = e.message
+                status_code = 400
+        if media_type == MediaType.likes:
+            try:
+                await to_async(apply_likes)(media)
+                status_code = 201
             except ValidationError as e:
                 status = e.code
                 message = e.message

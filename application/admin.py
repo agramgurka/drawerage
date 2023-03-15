@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Game, Round, Player, Task, AutoAnswer
+from .models import AutoAnswer, Game, Player, Round, Task
 from .services.basics import GameStage
 
 

@@ -81,6 +81,7 @@ class Variant(models.Model):
     game_round = models.ForeignKey(Round, related_name='round_variants', on_delete=models.CASCADE)
     author = models.ForeignKey(Player, related_name='player_variants', null=True, on_delete=models.SET_NULL)
     selected_by = models.ManyToManyField(Player, related_name='variants')
+    likes_cnt = models.IntegerField('likes count', default=0)
 
 
 class Result(models.Model):
