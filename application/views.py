@@ -126,11 +126,11 @@ class MediaUpload(View):
                 status_code = 400
         if status_code == 200:
             host_channel = await to_async(get_host_channel)(game_id)
-            logger.debug(host_channel)
-            await self.channel_layer.send(
-                host_channel,
-                {
-                    'type': 'broadcast.updates'
-                }
-            )
+            if host_channel:
+                await self.channel_layer.send(
+                    host_channel,
+                    {
+                        'type': 'broadcast.updates'
+                    }
+                )
         return JsonResponse({'status': status, 'message': message}, status=status_code)

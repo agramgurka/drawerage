@@ -90,7 +90,7 @@ class Game(AsyncJsonWebsocketConsumer):
         if command == 'connected':
             if self.paused:
                 await self.game_paused({'text': 'Game is paused'})
-            await self.channel_layer.send(
+            await self.channel_send(
                 await to_async(get_host_channel)(self.game_id),
                 {
                     "type": "broadcast.updates"
