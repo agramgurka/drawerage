@@ -377,7 +377,7 @@ def upload_avatar(game_id: int, user: User, media: str) -> None:
     player = user.player_set.get(game_id=game_id)
     if not player.avatar:
         media = media.replace('data:image/png;base64,', '')
-        avatar = ContentFile(base64.b64decode(media), f'{game_id}_{player.nickname}.png')
+        avatar = ContentFile(base64.b64decode(media), f'{game_id}_{player.pk}.png')
         player.avatar = avatar
         player.save()
         logger.info(f'{player.nickname} uploaded avatar')
