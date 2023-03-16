@@ -5,16 +5,15 @@ import re
 from functools import lru_cache
 from typing import Optional
 
-from more_itertools import distinct_combinations
-
 from django.contrib.auth.models import User
-from django.core.exceptions import ValidationError, ObjectDoesNotExist
-from django.db.models import F, Count, Q
-from django.http import HttpRequest
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.files.base import ContentFile
+from django.db.models import Count, F, Q
+from django.http import HttpRequest
+from more_itertools import distinct_combinations
 from thefuzz import fuzz
 
-from ..models import Player, Game, Round, Variant, Result, Language
+from ..models import Game, Language, Player, Result, Round, Variant
 from .auto_answers import get_auto_answers
 from .basics import (DRAWING_COLORS,
                      GameRole, GameStage, RoundStage,
@@ -231,7 +230,7 @@ def create_results(game_id: int):
         Result.objects.create(
             game=game,
             player=player
-                             )
+        )
 
 
 def get_current_round(game_id: int) -> Round:

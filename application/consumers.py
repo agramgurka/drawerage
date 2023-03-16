@@ -17,11 +17,12 @@ from .services.db_function import (calculate_results, create_results,
                                    create_rounds, deregister_channel,
                                    finish_game, get_current_round,
                                    get_drawing_task, get_finished_players,
-                                   get_game_stage, get_players,
-                                   get_players_answers, get_results, get_role,
-                                   get_variants, is_game_paused, next_stage,
+                                   get_game_stage, get_host_channel,
+                                   get_players, get_players_answers,
+                                   get_results, get_role, get_variants,
+                                   is_game_paused, next_stage,
                                    populate_missing_variants, register_channel,
-                                   stage_completed, switch_pause_state, get_host_channel)
+                                   stage_completed, switch_pause_state)
 from .services.utils import display_task_result
 
 logger = logging.getLogger(__name__)
@@ -55,7 +56,7 @@ class Game(AsyncJsonWebsocketConsumer):
         else:
             await self.close()
             logger.info('connection declined')
-            
+
     async def channel_send(self, channel_name, data):
         try:
             if channel_name:
@@ -457,7 +458,7 @@ class Game(AsyncJsonWebsocketConsumer):
         msg = {
             'command': 'init_stage',
             'stage': await to_async(get_game_stage)(self.game_id),
-            }
+        }
         await self.send_json(msg)
 
     async def game_paused(self, event: dict):
