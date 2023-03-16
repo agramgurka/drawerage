@@ -1,5 +1,6 @@
 from django.urls import path
-from .views import StartPage, CreateGame, Game, MediaUpload
+
+from .views import CreateGame, Game, MediaUpload, StartPage
 
 urlpatterns = [
     path('', StartPage.as_view(), name='start_page'),

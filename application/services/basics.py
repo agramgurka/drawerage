@@ -1,7 +1,7 @@
-import os.path
-from enum import IntEnum
 import asyncio as aio
+import os.path
 import sys
+from enum import IntEnum
 
 from Drawesome.settings import BASE_DIR
 
@@ -97,8 +97,3 @@ POINTS_FOR_CORRECT_RECOGNITION = 1000
 POINTS_FOR_RECOGNITION = 250
 MEDIA_UPLOAD_DELAY = 3
 GAME_UPDATE_DELAY = 0.2
-
-
-
-
-

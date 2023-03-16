@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
+
 from .services.basics import GameStage, RoundStage
 
 
@@ -28,10 +29,11 @@ class Game(models.Model):
     code = models.CharField('code', max_length=10)
     cycles = models.IntegerField('number of cycles', default=2)
     stage = models.CharField(
-                             'game stage',
-                             max_length=20,
-                             choices=[(stage, stage.value) for stage in GameStage],
-                             default=GameStage.pregame)
+        'game stage',
+        max_length=20,
+        choices=[(stage, stage.value) for stage in GameStage],
+        default=GameStage.pregame
+    )
     is_paused = models.BooleanField('is paused', default=False)
 
     def __str__(self):
@@ -62,10 +64,11 @@ class Round(models.Model):
     painting_task = models.CharField('painting task', max_length=1000)
     painting = models.ImageField()
     stage = models.CharField(
-                             'round stage',
-                             max_length=20,
-                             choices=[(stage, stage.value) for stage in RoundStage],
-                             default=RoundStage.not_started)
+        'round stage',
+        max_length=20,
+        choices=[(stage, stage.value) for stage in RoundStage],
+        default=RoundStage.not_started
+    )
 
     class Meta:
         ordering = ['game', 'order_number']

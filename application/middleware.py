@@ -1,5 +1,5 @@
-from django.http import HttpRequest
 from django.contrib.auth import login
+from django.http import HttpRequest
 
 from .services.db_function import create_user
 

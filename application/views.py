@@ -1,21 +1,23 @@
 import json
 import logging
 
-from channels.layers import get_channel_layer
-from django.http import JsonResponse
 from channels.db import database_sync_to_async as to_async
-from django.shortcuts import render, redirect
+from channels.layers import get_channel_layer
+from django.core.exceptions import (MultipleObjectsReturned,
+                                    ObjectDoesNotExist, ValidationError)
+from django.http import JsonResponse
+from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views import View
 from django.views.generic import FormView
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned, ValidationError
 
-from .services.db_function import (join_game, create_game, get_active_game,
-                                   upload_avatar, upload_painting, get_game_code,
-                                   apply_variant, select_variant, get_game_stage,
-                                   get_player_color, is_player, is_host, get_host_channel)
-from .services.basics import MediaType, GameStage
 from .forms import CreateGameForm, JoinGameForm
+from .services.basics import GameStage, MediaType
+from .services.db_function import (apply_variant, create_game, get_active_game,
+                                   get_game_code, get_game_stage,
+                                   get_host_channel, get_player_color, is_host,
+                                   is_player, join_game, select_variant,
+                                   upload_avatar, upload_painting)
 
 logger = logging.getLogger(__name__)
 

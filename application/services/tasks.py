@@ -1,10 +1,10 @@
-from typing import Any
-import re
 import random
+import re
+from typing import Any
 
 import requests
 
-from ..models import Task, Language
+from ..models import Language, Task
 
 
 class Restriction:
