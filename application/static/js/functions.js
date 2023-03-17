@@ -52,7 +52,7 @@ function initStatusScreen(players, taskType, task) {
         let statusBlock = document.createElement("div");
         statusBlock.classList.add("col-md-3", "status-block", "text-center", "py-4");
         let playerName = document.createElement("p");
-        playerName.innerHTML = i;
+        playerName.innerHTML = players[i].nickname;
         playerName.classList.add("player-name");
         let playerAvatar;
         if (players[i].avatar){
