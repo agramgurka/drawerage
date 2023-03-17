@@ -98,7 +98,8 @@ var canvas,ctx;
 				    // React to mouse events on the canvas, and mouseup on the entire document
 				    canvas.addEventListener('mousedown', sketchpad_mouseDown, false);
 				    canvas.addEventListener('mousemove', sketchpad_mouseMove, false);
-				    canvas.addEventListener('mouseup', mouseOrTouchUp, false);
+				    document.addEventListener('mouseup', mouseOrTouchUp, false);
+				    canvas.addEventListener('mouseenter', mouseEnter, false);
 
 				    // React to touch events on the canvas
 				    canvas.addEventListener('touchstart', sketchpad_touchStart, false);
@@ -110,27 +111,19 @@ var canvas,ctx;
 		// Draws a dot at a specific position on the supplied canvas name
 		// Parameters are: A canvas context, the x position, the y position, the size of the dot
 		function drawLine(ctx, x, y, size) {
-				ctx.strokeStyle = currentColor;
-				ctx.beginPath();
-
-				var n = userDrawnPixels.length;
-				var point = userDrawnPixels[n-1];
-
-				if ((n>1) && moving) {
-				    var prevPoint = userDrawnPixels[n-2];
+				if ((userDrawnPixels.length>1) && moving) {
+				    ctx.strokeStyle = currentColor;
+				    ctx.beginPath();
+				    var prevPoint = userDrawnPixels[userDrawnPixels.length-1];
 				    ctx.moveTo(prevPoint[0],prevPoint[1]);
-				    ctx.lineTo(point[0], point[1]);
-				} else {
-				    //ctx.moveTo(point[0],point[0]);
-				    //ctx.lineTo(point[0], point[1]);
+				    ctx.lineTo(x, y);
+				    ctx.lineCap = "round";
+				    ctx.lineJoin = "round";
+				    ctx.lineWidth = size;
+				    ctx.stroke();
+				    ctx.closePath();
+				    ctx.fill();
 				}
-
-				ctx.lineCap = "round";
-				ctx.lineJoin = "round";
-				ctx.lineWidth = size;
-				ctx.stroke();
-				ctx.closePath();
-				ctx.fill();
 		}
 
 
@@ -159,6 +152,15 @@ var canvas,ctx;
 				moving=0;
 		}
 
+
+		function mouseEnter(e) {
+		    if (mouseDown) {
+		        getMousePos(e);
+		        userDrawnPixels.push([mouseX, mouseY]);
+		    }
+		}
+
+
 		function sketchpad_mouseMove(e) {
 				// Update the mouse co-ordinates when moved
 				getMousePos(e);
@@ -176,11 +178,11 @@ var canvas,ctx;
 				if (!e)
 				    var e = event;
 
-				if (e.offsetX) {
+				if (e.offsetX !== undefined) {
 				    mouseX = e.offsetX;
 				    mouseY = e.offsetY;
 				}
-				else if (e.layerX) {
+				else if (e.layerX !== undefined) {
 				    mouseX = e.layerX;
 				    mouseY = e.layerY;
 				}
