@@ -1,5 +1,6 @@
 import random
 import re
+import sys
 from typing import Any
 
 import requests
@@ -29,16 +30,16 @@ class BaseTaskProvider:
             raise ValueError(f'{lang} is not supported in {self.__class__}')
         self.language = lang
 
-    def get_task(self, restrictions=()) -> tuple[str, Any]:
+    def get_task(self, restrictions=()) -> tuple[Task, list[Restriction]]:
         raise NotImplementedError()
 
 
 class PredefinedTaskProvider(BaseTaskProvider):
-    def get_task(self, restrictions=None):
+    def get_task(self, restrictions=None) -> tuple[Task, list[Restriction]]:
         if not restrictions:
             restrictions = []
 
-        qs = Task.objects.filter(language=self.language)
+        qs = Task.objects.filter(language=self.language, auto_created=False)
         items = []
         other_restrictions = []
         for r in restrictions:
@@ -49,18 +50,26 @@ class PredefinedTaskProvider(BaseTaskProvider):
         if items:
             qs = qs.exclude(id__in=items)
 
-        task = qs.order_by('?').first()
-        return task.text.lower().strip(), other_restrictions + [IdRestriction(ids=list(set(items) | {task.id}))]
+        task = qs.order_by('?')[0]
+        return (
+            task,
+            other_restrictions + [IdRestriction(ids=list(set(items) | {task.id}))],
+        )
 
 
 class ExternalTextTaskProvider(BaseTaskProvider):
+    SOURCE = None
+
     choices = []
 
-    def get_task(self, restrictions=None) -> tuple[str, Any]:
+    def get_source(self):
+        assert self.SOURCE, 'SOURCE for ExternalTextTaskProvider must be defined'
+        return self.SOURCE
+
+    def get_task(self, restrictions=None) -> tuple[Task, list[Restriction]]:
         if not restrictions:
             restrictions = []
 
-        task = random.choice(self.choices)
         other_restrictions = []
         items = []
         for r in restrictions:
@@ -69,12 +78,66 @@ class ExternalTextTaskProvider(BaseTaskProvider):
             else:
                 other_restrictions.append(r)
 
-        return task.lower().strip(), other_restrictions + [TextRestriction(phrases=list(set(items) | {task}))]
+        task_text = None
+
+        num_of_saved_tasks = Task.objects.filter(auto_created=True, source=self.SOURCE).count()
+        total_tasks = len(self.choices) or num_of_saved_tasks * 5  # default is 20% choice item is in DB
+
+        # from DB or from generator
+        db_rate = num_of_saved_tasks / (total_tasks or 1)
+
+        # assume there are more choices than players
+        attempts = len(self.choices)
+        while task_text is None and attempts > 0:
+            probability_of_fetch_from_db = random.random()
+            if probability_of_fetch_from_db >= db_rate:
+                try_text = random.choice(self.choices)
+            else:
+                try_text = Task.objects.filter(
+                    auto_created=True,
+                    source=self.get_source(),
+                    # TODO: need to fetch it smartly, looking at the rate
+                ).order_by('?').first().text
+
+            stored_task = Task.objects.filter(
+                auto_created=True,
+                text__iexact=task_text,
+            ).first()
+
+            if stored_task:
+                # We want to have a probability to show even disliked tasks
+                should_display_probability = random.random()
+                should_display = (stored_task.up_vote + 1) / (stored_task.down_vote + 1) > should_display_probability
+            else:
+                should_display = True
+            if try_text not in items and should_display:
+                task_text = try_text
+            attempts -= 1
+
+        if task_text is None:
+            raise ValueError('Can\'t create unique task')
+
+        # find existing tasks
+        task = Task.objects.filter(
+            auto_created=True,
+            text__iexact=task_text,
+        ).first() or Task(
+            language=self.language,
+            auto_created=True,
+            text=task_text,
+            source=self.get_source(),
+        )
+
+        return (
+            task,
+            other_restrictions + [TextRestriction(phrases=list(set(items) | {task_text}))]
+        )
 
 
 class RuslangTaskProvider(ExternalTextTaskProvider):
     LANGUAGES = ('ru',)
     URL = 'http://dict.ruslang.ru/magn.php?act=search'
+    SOURCE = 'ruslang_phrases'
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -85,6 +148,7 @@ class RuslangTaskProvider(ExternalTextTaskProvider):
 class RuslangTaskSingleNounProvider(ExternalTextTaskProvider):
     LANGUAGES = ('ru',)
     URL = 'http://dict.ruslang.ru/freq.php?act=show&dic=freq_s'
+    SOURCE = 'ruslang_nouns'
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

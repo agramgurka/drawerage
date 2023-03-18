@@ -78,6 +78,7 @@ class Variant(models.Model):
     """ rounds' variants """
 
     text = models.CharField('variant text', max_length=100)
+    task = models.ForeignKey('Task', on_delete=models.SET_NULL, blank=True, null=True, related_name='used_variants')
     game_round = models.ForeignKey(Round, related_name='round_variants', on_delete=models.CASCADE)
     author = models.ForeignKey(Player, related_name='player_variants', null=True, on_delete=models.SET_NULL)
     selected_by = models.ManyToManyField(Player, related_name='variants')
@@ -101,8 +102,13 @@ class Task(models.Model):
     language = models.ForeignKey(Language, related_name='tasks', on_delete=models.CASCADE)
     text = models.TextField(unique=True)
     source = models.CharField(max_length=255, blank=True)
+    auto_created = models.BooleanField(default=False)
     up_vote = models.IntegerField(default=0)
     down_vote = models.IntegerField(default=0)
+
+    @property
+    def prepared_text(self):
+        return self.text.lower().strip()
 
 
 class AutoAnswer(models.Model):

@@ -13,7 +13,7 @@ from django.http import HttpRequest
 from more_itertools import distinct_combinations
 from thefuzz import fuzz
 
-from ..models import Game, Language, Player, Result, Round, Variant
+from ..models import Game, Language, Player, Result, Round, Task, Variant
 from .auto_answers import get_auto_answers
 from .basics import (CODE_CHARS, DRAWING_COLORS, GAME_CODE_LEN,
                      POINTS_FOR_CORRECT_ANSWER, POINTS_FOR_CORRECT_RECOGNITION,
@@ -189,7 +189,7 @@ def available_task_providers(lang: Language) -> list[tuple[BaseTaskProvider, int
     ] if x[0] is not None]
 
 
-def create_drawing_task(game: Game, restrictions) -> tuple[str, Restriction]:
+def create_drawing_task(game: Game, restrictions) -> tuple[Task, Restriction]:
     """ returns new painting task """
 
     producers_with_weights = available_task_providers(game.language)
@@ -213,12 +213,16 @@ def create_rounds(game_id: int) -> None:
             game=game,
             order_number=order_number,
             painter=player,
-            painting_task=task,
+            painting_task=task.prepared_text,
         )
+        if not task.id:
+            task.save()
+
         Variant.objects.create(
-            text=task,
+            text=task.prepared_text,
             author=player,
-            game_round=game_round
+            game_round=game_round,
+            task=task,
         )
 
 
