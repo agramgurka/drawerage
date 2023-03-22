@@ -575,8 +575,16 @@ def get_host_channel(game_id: int) -> str:
     return Player.objects.get(game_id=game_id, is_host=True).channel_name
 
 
-def apply_likes(likes: list[int]):
-    Variant.objects.select_for_update().filter(pk__in=likes).update(likes_cnt=F('likes_cnt') + 1)
+def apply_likes(game_id: int, user: User, likes: list[int]):
+    player = user.player_set.get(game_id=game_id)
+    if player.is_host:
+        raise ValidationError('Host is not allowed to like variants')
+    for variant in Variant.objects.select_for_update().filter(
+        ~Q(author=player), ~Q(liked_by=player), pk__in=likes,
+    ):
+        variant.liked_by.add(player)
+        variant.likes_cnt += 1
+        variant.save()
 
 
 def calculate_likes(player: Player) -> int:

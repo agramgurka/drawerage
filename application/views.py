@@ -127,7 +127,7 @@ class MediaUpload(View):
                 status_code = 400
         if media_type == MediaType.likes:
             try:
-                await to_async(apply_likes)(media)
+                await to_async(apply_likes)(game_id, request.user, media)
                 status_code = 201
             except ValidationError as e:
                 status = e.code
