@@ -16,18 +16,18 @@ function initResultsScreen(results) {
     let backgroundColorsAfter = [];
     let incrementColors = []
 
-    for (let i in resultsBefore) {
-        labelsBefore.push(resultsBefore[i].player__nickname);
-        pointsBefore.push(resultsBefore[i].result - resultsBefore[i].round_increment);
-        backgroundColorsBefore.push(resultsBefore[i].player__drawing_color);
-        increments.push(resultsBefore[i].round_increment);
-        incrementColors.push(resultsBefore[i].player__drawing_color + 'CC');
+    for (let result of resultsBefore) {
+        labelsBefore.push(result.player__nickname);
+        pointsBefore.push(result.result - result.round_increment);
+        backgroundColorsBefore.push(result.player__drawing_color);
+        increments.push(result.round_increment);
+        incrementColors.push(result.player__drawing_color + 'CC');
     }
 
-    for (let i in resultsAfter) {
-        labelsAfter.push(resultsAfter[i].player__nickname);
-        pointsAfter.push(resultsAfter[i].result);
-        backgroundColorsAfter.push(resultsAfter[i].player__drawing_color);
+    for (let result of resultsAfter) {
+        labelsAfter.push(result.player__nickname);
+        pointsAfter.push(result.result);
+        backgroundColorsAfter.push(result.player__drawing_color);
     }
 
     const ctx = document.getElementById("results-canvas");
