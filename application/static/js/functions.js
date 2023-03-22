@@ -1,9 +1,9 @@
 function getCookie(name) {
-    var cookieValue = null;
+    let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
-        var cookies = document.cookie.split(';');
-        for (var i = 0; i < cookies.length; i++) {
-            var cookie = cookies[i].trim();
+        let cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            let cookie = cookies[i].trim();
             if (cookie.substring(0, name.length + 1) === (name + '=')) {
                 cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
                 break;
@@ -14,17 +14,16 @@ function getCookie(name) {
 }
 
 function initStatusScreen(players, taskType, task) {
-    const gameStage = document.getElementById("round-stage");
     const currentTask = document.getElementById("current-task");
-    currentTask.innerHTML = "";
+    currentTask.textContent = "";
     const playersStatuses = document.getElementById("players-statuses");
-    playersStatuses.innerHTML = "";
+    playersStatuses.textContent = "";
     const statusScreenHeader = document.createElement("h4");
-    statusScreenHeader.classList.add("text-center")
-    currentTask.appendChild(statusScreenHeader);
+    statusScreenHeader.classList.add("text-center");
+    currentTask.append(statusScreenHeader);
 
     if (taskType === "writing") {
-        statusScreenHeader.innerHTML = "Players are guessing what is drawn here";
+        statusScreenHeader.textContent = "Players are guessing what is drawn here";
         let painting = document.createElement("img");
         painting.classList.add("mx-auto", "d-block", "painting-miniature");
         painting.src = task;
@@ -33,51 +32,50 @@ function initStatusScreen(players, taskType, task) {
             this.style.width === "50%" ? this.style.width = "100%" : this.style.width = "50%"
             }
         )
-        currentTask.appendChild(painting);
+        currentTask.append(painting);
     }
     else if (taskType === "selecting") {
-        statusScreenHeader.innerHTML = "Players are selecting the correct answer";
+        statusScreenHeader.textContent = "Players are selecting the correct answer";
         let variants = document.createElement("ul");
         variants.classList.add("my-3", "mx-5");
-        for (let i in task) {
+        for (let variantText of task) {
             let variant = document.createElement("li");
-            variant.innerHTML = task[i];
+            variant.textContent = variantText;
             variant.classList.add("fs-5");
-            variants.appendChild(variant);
+            variants.append(variant);
         }
-        currentTask.appendChild(variants);
+        currentTask.append(variants);
     }
 
-    for (let i in players) {
+    for (let id in players) {
+        let player = players[id];
         let statusBlock = document.createElement("div");
         statusBlock.classList.add("col-md-3", "status-block", "text-center", "py-4");
         let playerName = document.createElement("p");
-        playerName.innerHTML = players[i].nickname;
+        playerName.textContent = player.nickname;
         playerName.classList.add("player-name");
         let playerAvatar;
-        if (players[i].avatar){
+        if (player.avatar){
             playerAvatar = document.createElement("img");
             playerAvatar.classList.add("player-avatar", "empty-avatar");
-            playerAvatar.src = players[i].avatar;
+            playerAvatar.src = player.avatar;
             playerAvatar.classList.remove("empty-avatar");
         } else {
             playerAvatar = document.createElement("div");
             playerAvatar.classList.add("player-avatar", "empty-avatar");
         }
         let status = document.createElement("img");
-        if (players[i].finished) {
+        if (player.finished) {
              status.src = staticUrl + "icons/status_ok.png";
         }
         else {
             status.classList.add('status-' + taskType);
             status.src = staticUrl + "icons/status_" + taskType + ".png";
         }
-        status.innerHTML = players[i].finished;
+        status.textContent = player.finished;
         status.classList.add("status");
-        statusBlock.appendChild(playerAvatar);
-        statusBlock.appendChild(status);
-        statusBlock.appendChild(playerName);
-        playersStatuses.appendChild(statusBlock);
+        statusBlock.append(playerAvatar, status, playerName);
+        playersStatuses.append(statusBlock);
     }
     return document.getElementById("status-screen");;
 };
@@ -97,7 +95,7 @@ function initTaskScreen(taskType, task){
         let context = canvas.getContext("2d");
         context.clearRect(0, 0, canvas.width, canvas.height);
         let taskArea = document.getElementById("task");
-        taskArea.innerHTML = task;
+        taskArea.textContent = task;
     }
     if (taskType === "writing"){
         let writingTask = document.getElementById("writing-task");
@@ -106,7 +104,7 @@ function initTaskScreen(taskType, task){
         if (!roundPainting){
             roundPainting = document.createElement("img");
             roundPainting.id = "round-painting"
-            document.getElementById("drawing-area").appendChild(roundPainting);
+            document.getElementById("drawing-area").append(roundPainting);
         }
         roundPainting.src = task;
         let variant = document.getElementById("variant");
@@ -119,13 +117,13 @@ function initTaskScreen(taskType, task){
         img.classList.add("mx-auto", "d-block");
         img.src = task.painting;
         const imgContainer = document.getElementById("selecting-task-image");
-        imgContainer.innerHTML = "";
+        imgContainer.textContent = "";
         imgContainer.append(img);
         const ul = document.getElementById("selecting-task-variants");
-        ul.innerHTML = "";
+        ul.textContent = "";
         task.variants.forEach((option) => {
             let optionBlock = document.createElement("li");
-            optionBlock.innerHTML = option;
+            optionBlock.textContent = option;
             optionBlock.classList.add("option-block", "list-group-item");
             optionBlock.addEventListener("click", selectVariant);
             ul.append(optionBlock);
@@ -137,12 +135,12 @@ function initTaskScreen(taskType, task){
 
 function initFinalStandingsScreen(standings) {
     const winners = document.getElementById("winners");
-    winners.innerHTML = "";
+    winners.textContent = "";
     const scoreTable = document.querySelector("#final-standings tbody");
-    scoreTable.innerHTML = "";
+    scoreTable.textContent = "";
     let playerPlace = 1;
 
-    for (let i in standings) {
+    for (let i = 0; i < standings.length; i++) {
         if (i < 3) {
             let placeCard = document.createElement("div");
             placeCard.classList.add("player-card");
@@ -152,31 +150,29 @@ function initFinalStandingsScreen(standings) {
             placeCardBody.classList.add("player-card-body");
             let placeCardText = document.createElement("p");
             placeCardText.classList.add("player-card-text");
-            placeCardText.innerHTML = standings[i].result;
+            placeCardText.textContent = standings[i].result;
             let placeCardAvatar = document.createElement("img");
             placeCardAvatar.classList.add("player-card-img");
             placeCardAvatar.src = "/media/" + standings[i].player__avatar;
-            placeCardBody.appendChild(placeCardText);
+            placeCardBody.append(placeCardText);
 
             if (playerPlace === 1) {
                 placeCard.classList.add("first-place-card");
                 placeBadge.classList.add("first-place-badge");
-                placeBadge.innerHTML = "#1";
+                placeBadge.textContent = "#1";
             }
             else if (playerPlace === 2) {
                 placeCard.classList.add("second-place-card");
                 placeBadge.classList.add("second-place-badge");
-                placeBadge.innerHTML = "#2";
+                placeBadge.textContent = "#2";
             }
             else if (playerPlace === 3) {
                 placeCard.classList.add("third-place-card");
                 placeBadge.classList.add("third-place-badge");
-                placeBadge.innerHTML = "#3";
+                placeBadge.textContent = "#3";
             }
-            placeCard.appendChild(placeBadge);
-            placeCard.appendChild(placeCardAvatar);
-            placeCard.appendChild(placeCardBody);
             placeCard.style.borderColor = standings[i].player__drawing_color;
+            placeCard.append(placeBadge, placeCardAvatar, placeCardBody);
             winners.append(placeCard);
         }
 
@@ -188,11 +184,11 @@ function initFinalStandingsScreen(standings) {
         let score = document.createElement("td");
         let likes_cnt = document.createElement("td");
 
-        place.innerHTML = playerPlace;
+        place.textContent = playerPlace;
         avatar.src = '/media/' + standings[i].player__avatar;
-        nickname.innerHTML = standings[i].player__nickname;
-        score.innerHTML = standings[i].result;
-        likes_cnt.innerHTML = standings[i].likes_cnt;
+        nickname.textContent = standings[i].player__nickname;
+        score.textContent = standings[i].result;
+        likes_cnt.textContent = standings[i].likes_cnt;
 
         player.classList.add("d-flex", "align-items-center", "justify-content-center");
         avatar.classList.add("rounded-circle", "mx-2");
@@ -200,14 +196,10 @@ function initFinalStandingsScreen(standings) {
         avatar.style.height = "45px";
         nickname.classList.add("fw-bold");
 
-        player.appendChild(avatar);
-        player.appendChild(nickname);
-        newRow.appendChild(place);
-        newRow.appendChild(player);
-        newRow.appendChild(score);
-        newRow.appendChild(likes_cnt);
-        scoreTable.appendChild(newRow);
-        if (parseInt(i) + 1 < standings.length && standings[i].result > standings[parseInt(i)+1].result) playerPlace++;
+        player.append(avatar, nickname);
+        newRow.append(place, player, score, likes_cnt);
+        scoreTable.append(newRow);
+        if (i + 1 < standings.length && standings[i].result > standings[i+1].result) playerPlace++;
     }
     return document.getElementById("final-standings");
 }
@@ -225,7 +217,7 @@ function displayScreen(screen) {
 
 function displayGameCode(gameCode) {
     const codeBlock = document.getElementById("game-code");
-    codeBlock.innerHTML = gameCode;
+    codeBlock.textContent = gameCode;
 }
 
 function displayButtons(enabledButtons) {
@@ -242,7 +234,7 @@ function displayButtons(enabledButtons) {
 
 function displayPopup(popupId, text) {
     hidePopups();
-    document.getElementById(popupId + '-text').innerHTML = text;
+    document.getElementById(popupId + '-text').textContent = text;
     document.getElementById(popupId).classList.remove("invisible");
 }
 
@@ -267,7 +259,7 @@ function submitPainting() {
 }
 
 function selectVariant() {
-    let answer = this.innerHTML;
+    let answer = this.textContent;
     let csrftoken = getCookie('csrftoken');
     fetch(window.location.origin + "/upload/", {
         method: "POST",
@@ -284,7 +276,7 @@ function selectVariant() {
 function submitVariant(e) {
     if (e) {e.preventDefault();}
     const errorEl = document.querySelector('#variant-form .validation-error');
-    errorEl.innerHTML = '';
+    errorEl.textContent = '';
 
     const variant = document.getElementById("variant").value;
     let csrftoken = getCookie('csrftoken');
@@ -307,7 +299,7 @@ function submitVariant(e) {
         })
         .then((data) => {
             if (data.status !== 'success' && !!e) {
-                errorEl.innerHTML = data.message;
+                errorEl.textContent = data.message;
             }
         });
     }
@@ -386,7 +378,7 @@ function addLoadingSpinner(elementId) {
     const element = document.getElementById(elementId);
     let loadingSpinner = document.createElement("span");
     loadingSpinner.classList.add("spinner-border", "spinner-border-sm");
-    element.appendChild(loadingSpinner);
+    element.append(loadingSpinner);
 }
 
 function removeLoadingSpinner(elementId) {

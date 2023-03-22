@@ -55,7 +55,7 @@ function setTimer(initial, left) {
   if (timer.innerHTML === "") initTimer(initial, left);
   else {
     timeLeft = left;
-    document.getElementById("base-timer-label").innerHTML = formatTime(
+    document.getElementById("base-timer-label").textContent = formatTime(
       timeLeft
     );
     setCircleDasharray();

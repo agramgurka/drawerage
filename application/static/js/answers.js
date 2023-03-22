@@ -5,24 +5,23 @@ function initAnswersScreen(variants) {
     const screen = document.getElementById("answers-screen");
     const variantsBlock = document.getElementById("variants-block");
     variantsBlock.innerHTML = "";
-    for (let i in variants) {
-        let variant = document.createElement("div");
-        variant.classList.add("d-flex", "align-items-baseline");
+    for (let variant of variants) {
+        let variantContainer = document.createElement("div");
+        variantContainer.classList.add("d-flex", "align-items-baseline");
         let variantText = document.createElement("p");
-        variantText.innerHTML = variants[i].text;
-        variant.appendChild(variantText);
-        if (variants[i].likable) {
+        variantText.textContent = variant.text;
+        variantContainer.append(variantText);
+        if (variant.likable) {
             let like = document.createElement("input");
             like.type = "checkbox";
             like.classList.add("btn-check", "like");
-            like.id = variants[i].id;
+            like.id = variant.id;
             let likeLable = document.createElement("label");
             likeLable.classList.add("btn", "like-btn", "fa", "fa-thumbs-up");
-            likeLable.htmlFor=variants[i].id;
-            variant.appendChild(like);
-            variant.appendChild(likeLable);
+            likeLable.htmlFor=variant.id;
+            variantContainer.append(like, likeLable);
         }
-        variantsBlock.append(variant);
+        variantsBlock.append(variantContainer);
     }
     let answerCard = document.querySelector(".answer-card-inner");
     answerCard.classList.add("invisible");
@@ -34,14 +33,14 @@ function displayAnswer(answer, isCorrect) {
     let answerCard = document.querySelector(".answer-card-inner");
     let variantText = document.getElementById("answer-card-variant");
 
-    variantText.innerHTML = answer.text;
+    variantText.textContent = answer.text;
     const variantSelects = document.getElementById("variant-selects");
-    variantSelects.innerHTML = "";
+    variantSelects.textContent = "";
     answerCard.classList.remove("flipped", "invisible");
 
     if (answer.selected_by.length) {
         answer.selected_by.forEach((answerSelectedImage, i) => {
-            var delay = DISPLAY_SELECTED_DURATION * 1000 * (i + 1);
+            let delay = DISPLAY_SELECTED_DURATION * 1000 * (i + 1);
             setTimeout(() => displaySelectedBy(variantSelects, answerSelectedImage), delay);
             if (i === answer.selected_by.length - 1) {
                 const delayBeforeFlip = delay + WAIT_BEFORE_FLIP_DURATION * 1000;
@@ -58,7 +57,7 @@ function displayAnswer(answer, isCorrect) {
 
 function initCardBack(answer, isCorrect) {
     let variantAuthorContainer = document.getElementById("answer-card-author");
-    variantAuthorContainer.innerHTML = '';
+    variantAuthorContainer.textContent = "";
     let cardBack = document.querySelector(".answer-card-back");
     let cardCorrectness = document.getElementById("answer-card-correctness");
 
@@ -74,12 +73,12 @@ function initCardBack(answer, isCorrect) {
     if (isCorrect) {
         cardBack.classList.remove("answer-card-back-incorrect");
         cardBack.classList.add("answer-card-back-correct");
-        cardCorrectness.innerHTML = "RIGHT";
+        cardCorrectness.textContent = "RIGHT";
     }
     else {
         cardBack.classList.add("answer-card-back-incorrect");
         cardBack.classList.remove("answer-card-back-correct");
-        cardCorrectness.innerHTML = "WRONG";
+        cardCorrectness.textContent = "WRONG";
     }
 }
 
@@ -95,8 +94,7 @@ function displaySelectedBy(variant, player) {
         playerImg.classList.add("selected-by-icon");
         playerImg.src = player.avatar;
         playerNickname.classList.add('nickname');
-        playerNickname.innerHTML = player.nickname;
-        selectedBlock.appendChild(playerImg);
-        selectedBlock.appendChild(playerNickname);
-        variant.appendChild(selectedBlock);
+        playerNickname.textContent = player.nickname;
+        selectedBlock.append(playerImg, playerNickname);
+        variant.append(selectedBlock);
 }
