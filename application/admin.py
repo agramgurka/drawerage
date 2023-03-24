@@ -36,8 +36,8 @@ class GameAdmin(admin.ModelAdmin):
 
 @admin.register(Task)
 class TaskAdmin(admin.ModelAdmin):
-    list_display = ('text', 'language', 'source')
-    list_filter = ('language', 'source')
+    list_display = ('text', 'language', 'source', 'auto_created')
+    list_filter = ('language', 'source', 'auto_created')
     search_fields = ('text__icontains', )
 
 
