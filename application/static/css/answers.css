@@ -79,9 +79,6 @@
 #variants-block > div {
     border-radius: 15px;
     font-size: 25px;
-    padding: 10px;
-    text-align: center;
-    margin: 15px 0;
 }
 
 #variant-selects .nickname {
