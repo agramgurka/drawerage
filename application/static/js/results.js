@@ -15,8 +15,8 @@ function initResultsScreen(results) {
     let backgroundColorsBefore = [];
     let backgroundColorsAfter = [];
     let incrementColors = []
-
     for (let result of resultsBefore) {
+        let player_nickname = result.player__nickname.substring(0, 20);
         labelsBefore.push(result.player__nickname);
         pointsBefore.push(result.result - result.round_increment);
         backgroundColorsBefore.push(result.player__drawing_color);
@@ -25,18 +25,22 @@ function initResultsScreen(results) {
     }
 
     for (let result of resultsAfter) {
+        let player_nickname = result.player__nickname.substring(0, 20);
         labelsAfter.push(result.player__nickname);
         pointsAfter.push(result.result);
         backgroundColorsAfter.push(result.player__drawing_color);
     }
 
     const ctx = document.getElementById("results-canvas");
+    let chartHeight = 120 * results.length;
+    ctx.parentNode.style.height = `${chartHeight}px`;
 
     const data = {
         labels: labelsBefore,
         datasets: [
             {
                 maxBarThickness: 40,
+                minBarLength: 5,
                 data: pointsBefore,
                 backgroundColor: backgroundColorsBefore,
                 borderRadius: 15,
@@ -46,17 +50,22 @@ function initResultsScreen(results) {
                             font: {size: 18},
                             align: 'end',
                             anchor: 'end',
-                            color: 'black'
+                            color: 'black',
                         },
                         player: {
-                            align: 'start',
-                            anchor: 'start',
+                            align: function (context) {
+                               let idx = context.dataIndex;
+                               let data = context.dataset.data[idx];
+                               return !data ? 50 : 90;
+                            },
+                            anchor: 'end',
+                            offset: 25,
                             formatter: function(value, context) {
                                 return context.dataset.labels !== undefined
                                        ? context.dataset.labels[context.dataIndex]
                                        : labelsBefore[context.dataIndex];
                             },
-                            font: {size: 20},
+                            font: {size: 14},
                             color: 'black',
                         }
                     },
@@ -77,7 +86,7 @@ function initResultsScreen(results) {
                                 backgroundColor: 'white',
                                 borderRadius: 15,
                                 formatter: function(value, context) {
-                                    return value > 0 ? '+' + value : null;
+                                    return '+' + value;
                                 }
                         },
                     }
@@ -114,12 +123,12 @@ function initResultsScreen(results) {
                 font: {
                   weight: 'bold'
                 },
-            }
+            },
         },
         layout: {
             padding: {
-                left: 100,
-                right: 100,
+                left: 0,
+                right: 85,
                 top: 50,
                 bottom: 50
             }
