@@ -8,6 +8,11 @@
 
 .player-name {
     font-weight: bold;
+    font-size: 14px;
+    overflow-wrap: anywhere;
+    overflow: hidden;
+    line-height: 1.5em;
+    max-height: 4.5em;
 }
 
 .player-avatar {
@@ -17,7 +22,7 @@
 }
 
 .painting-miniature {
-    width: 50%;
+    width: 70%;
 }
 
 .player-avatar.empty-avatar {
@@ -27,8 +32,8 @@
 }
 
 .status {
-    width: 30px;
-    height: 30px;
+    width: 20px;
+    height: 20px;
 }
 
 @keyframes tilt-shaking {
@@ -207,6 +212,12 @@
 #final-standing-table th {
     vertical-align: middle;
     text-align: center;
+}
+
+.game-controls {
+    position: absolute;
+    top: 15px;
+    width:fit-content
 }
 
 #variant-details {

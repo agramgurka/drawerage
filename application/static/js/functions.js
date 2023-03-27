@@ -16,28 +16,24 @@ function getCookie(name) {
 function initStatusScreen(players, taskType, task) {
     const currentTask = document.getElementById("current-task");
     currentTask.textContent = "";
+    currentTask.classList.remove("invisible");
     const playersStatuses = document.getElementById("players-statuses");
-    playersStatuses.textContent = "";
-    const statusScreenHeader = document.createElement("h4");
-    statusScreenHeader.classList.add("text-center");
-    currentTask.append(statusScreenHeader);
+    playersStatuses.innerHTML = "";
+    const statusScreenHeader = document.createElement("h5");
+    statusScreenHeader.classList.add("text-center", "mt-5");
+    playersStatuses.append(statusScreenHeader);
 
     if (taskType === "writing") {
-        statusScreenHeader.textContent = "Players are guessing what is drawn here";
+        statusScreenHeader.textContent = "Players are guessing what is drawn";
         let painting = document.createElement("img");
         painting.classList.add("mx-auto", "d-block", "painting-miniature");
         painting.src = task;
-        painting.addEventListener("click",
-            function() {
-            this.style.width === "50%" ? this.style.width = "100%" : this.style.width = "50%"
-            }
-        )
         currentTask.append(painting);
     }
     else if (taskType === "selecting") {
         statusScreenHeader.textContent = "Players are selecting the correct answer";
         let variants = document.createElement("ul");
-        variants.classList.add("my-3", "mx-5");
+        variants.classList.add("my-3", "text-left");
         for (let variantText of task) {
             let variant = document.createElement("li");
             variant.textContent = variantText;
@@ -46,11 +42,14 @@ function initStatusScreen(players, taskType, task) {
         }
         currentTask.append(variants);
     }
+    else {
+        currentTask.classList.add("invisible");
+    }
 
     for (let id in players) {
         let player = players[id];
         let statusBlock = document.createElement("div");
-        statusBlock.classList.add("col-md-3", "status-block", "text-center", "py-4");
+        statusBlock.classList.add("col-4", "col-md-3", "status-block", "text-center", "py-4");
         let playerName = document.createElement("p");
         playerName.textContent = player.nickname;
         playerName.classList.add("player-name");
