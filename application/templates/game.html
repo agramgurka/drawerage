@@ -29,20 +29,20 @@
         <button id="reconnect-server" type="button" class="btn btn-secondary"> Reconnect </button>
 </div>
 <div class="container">
-    <div class="row justify-content-center">
-        <h1 class="col-sm-2 text-center" id="game-code"></h1>
+    <div class="row">
+        <div class="game-controls">
+            <button id="start-game" type="button" class="btn btn-secondary invisible control-btn"> Start </button>
+            <button id="pause-game" type="button" class="btn btn-secondary invisible control-btn"> Pause </button>
+            <button id="cancel-game" type="button" class="btn btn-secondary invisible control-btn"> Cancel </button>
+        </div>
+        <h1 class="col-sm-2 text-center w-100" id="game-code"></h1>
     </div>
-     <button id="start-game" type="button" class="btn btn-secondary invisible control-btn"> Start </button>
-     <button id="pause-game" type="button" class="btn btn-secondary invisible control-btn"> Pause </button>
-     <button id="cancel-game" type="button" class="btn btn-secondary invisible control-btn"> Cancel </button>
      <div class="row justify-content-center mb-2">
          <div id="timer" class=" col-3 col-sm-1"></div>
      </div>
      <div id="status-screen" class="game-screen invisible row justify-content-around ">
-         <div class="col-md-6">
-             <div id="current-task" class="text-center"></div>
-             <div id="players-statuses" class="row justify-content-around"></div>
-         </div>
+         <div id="current-task" class="col-md-6"></div>
+         <div id="players-statuses" class="col-md-6 row justify-content-around"></div>
      </div>
      <div id="task-screen" class="game-screen invisible row justify-content-center">
          <div id="drawing-task" class="task-type invisible col-md-6">
