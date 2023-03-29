@@ -71,13 +71,10 @@ def deregister_channel(game_id: int, user: User):
     Player.objects.filter(game_id=game_id, user=user).update(channel_name=None)
 
 
-def create_player(game_id: int, user: User, nickname: str = None, is_host: bool = False) -> Player:
+def create_player(game_id: int, user: User, nickname: str, is_host: bool = False) -> Player:
     """ creates player's record """
 
-    color = None
-    if not is_host:
-        color = pick_color(game_id)
-
+    color = pick_color(game_id)
     return Player.objects.create(game_id=game_id, user=user, nickname=nickname, is_host=is_host, drawing_color=color)
 
 
@@ -105,11 +102,11 @@ def is_player(game_id: int, user: User) -> bool:
     return Game.objects.filter(pk=game_id, players__user=user).exists()
 
 
-def create_game(request, *, language_code, cycles=2) -> int:
+def create_game(request, *, nickname, language_code, cycles=2) -> int:
     """ creates new game object and adds game's host to it """
     language = Language.objects.get(code=language_code)
     game = Game.objects.create(code=generate_game_code(), cycles=cycles, language=language)
-    host = create_player(game_id=game.pk, user=request.user, is_host=True)
+    host = create_player(game_id=game.pk, user=request.user, nickname=nickname, is_host=True)
     game.players.add(host)
     return game.pk
 
@@ -245,12 +242,10 @@ def get_current_round(game_id: int) -> Round:
     )
 
 
-def get_players(game_id: int, host: bool = False) -> list:
+def get_players(game_id: int) -> list:
     """ returns list of players """
 
-    if host:
-        return list(Player.objects.filter(game_id=game_id))
-    return list(Player.objects.filter(game_id=game_id, is_host=False))
+    return list(Player.objects.filter(game_id=game_id))
 
 
 def get_game_stage(game_id: int) -> Optional[str]:
@@ -349,7 +344,7 @@ def next_stage(game_id: int):
             game_round.save()
         elif game_round.stage == RoundStage.answers:
             next_round_number = Round.objects.filter(game=game_id, stage=RoundStage.finished).count() + 1
-            players_cnt = len(get_players(game_id, host=False))
+            players_cnt = len(get_players(game_id))
             if next_round_number >= players_cnt * game.cycles:
                 game_round.stage = RoundStage.finished
                 game.stage = GameStage.finished
@@ -361,7 +356,7 @@ def next_stage(game_id: int):
             game_round.stage = RoundStage.finished
             game_round.save()
             next_round_number = Round.objects.filter(game=game_id, stage=RoundStage.finished).count()
-            players_cnt = len(get_players(game_id, host=False))
+            players_cnt = len(get_players(game_id))
             if next_round_number % players_cnt:
                 next_round = Round.objects.filter(game=game_id, stage=RoundStage.not_started).first()
                 next_round.stage = RoundStage.writing
@@ -486,7 +481,7 @@ def calculate_results(game_id: int) -> None:
 def stage_completed(game_id: int, game_stage: GameStage, round_stage: RoundStage) -> bool:
     """ checks if current game stage is completed"""
 
-    players_cnt = Player.objects.filter(game_id=game_id, is_host=False).count()
+    players_cnt = Player.objects.filter(game_id=game_id).count()
     if game_stage == GameStage.preround:
         return Round.objects.filter(
             game=game_id,
@@ -557,7 +552,7 @@ def get_players_answers(game_round: Round):
 
 def populate_missing_variants(game_round: Round):
     player_variants_num = game_round.round_variants.count()
-    players_number = game_round.game.players.exclude(is_host=True).count()
+    players_number = game_round.game.players.count()
     missing_answers = players_number - player_variants_num
     logger.info(f'generate {missing_answers} auto answers')
     if missing_answers:
@@ -571,18 +566,12 @@ def populate_missing_variants(game_round: Round):
         ])
 
 
-def is_host(game_id: int, user: User) -> bool:
-    return Player.objects.filter(game_id=game_id, user=user, is_host=True).exists()
-
-
 def get_host_channel(game_id: int) -> str:
     return Player.objects.get(game_id=game_id, is_host=True).channel_name
 
 
 def apply_likes(game_id: int, user: User, likes: list[int]):
     player = user.player_set.get(game_id=game_id)
-    if player.is_host:
-        raise ValidationError('Host is not allowed to like variants')
     for variant in Variant.objects.select_for_update().filter(
         ~Q(author=player), ~Q(liked_by=player), pk__in=likes,
     ):
