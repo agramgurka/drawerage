@@ -16,7 +16,7 @@ from .services.basics import GameStage, MediaType
 from .services.db_function import (apply_likes, apply_variant, create_game,
                                    get_active_game, get_game_code,
                                    get_game_stage, get_host_channel,
-                                   get_player_color, is_host, is_player,
+                                   get_player_color, is_player,
                                    join_game, select_variant, upload_avatar,
                                    upload_painting)
 
@@ -72,9 +72,7 @@ class Game(View):
         if not is_player(game_id, request.user):
             return redirect('start_page')
         drawing_color = get_player_color(game_id, request.user)
-        context = {'game_id': game_id, 'drawing_color': drawing_color}
-        if is_host(game_id, request.user):
-            context['game_code'] = get_game_code(game_id)
+        context = {'game_id': game_id, 'drawing_color': drawing_color, 'game_code': get_game_code(game_id)}
         return render(request, 'game.html', context)
 
 
