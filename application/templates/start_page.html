@@ -51,9 +51,9 @@
                 <div class="row">
                     <div class="col-xl">
                         <p>
-                            {{ form.player_nickname.errors }}
-                            <label for="{{ form.player_nickname.id_for_label }}">{{ form.player_nickname.label }}:</label>
-                            {{ form.player_nickname }}
+                            {{ new_game_form.player_nickname.errors }}
+                            <label for="{{ new_game_form.host_nickname.id_for_label }}">{{ new_game_form.host_nickname.label }}:</label>
+                            {{ new_game_form.host_nickname }}
                         </p>
                     </div>
                 </div>
@@ -63,6 +63,13 @@
                             <label for="{{ new_game_form.language.id_for_label }}">{{ new_game_form.language.label }}:</label>
                             {{ new_game_form.language.errors }}
                             {{ new_game_form.language }}
+                        </div>
+                    </div>
+                    <div class="col-xl col-xs-2">
+                        <div>
+                            <label for="{{ new_game_form.cycles.id_for_label }}">{{ new_game_form.cycles.label }}:</label>
+                            {{ new_game_form.cycles.errors }}
+                            {{ new_game_form.cycles }}
                         </div>
                     </div>
                     <div class="col-lg gy-3 text-end">
