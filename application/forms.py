@@ -13,11 +13,13 @@ class JoinGameForm(forms.Form):
 
 
 class CreateGameForm(forms.Form):
-    player_nickname = forms.CharField(max_length=NICKNAME_LEN)
+    host_nickname = forms.CharField(max_length=NICKNAME_LEN)
     language = forms.ChoiceField(choices=[])
+    cycles = forms.IntegerField()
 
     language.widget.attrs.update({'class': 'form-select'})
-    player_nickname.widget.attrs.update({'class': 'form-control'})
+    host_nickname.widget.attrs.update({'class': 'form-control'})
+    cycles.widget.attrs.update({'class': 'form-control', 'min': '1', 'step': '1', 'value': '2'})
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

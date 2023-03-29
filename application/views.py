@@ -56,7 +56,12 @@ class CreateGame(FormView):
     form_class = CreateGameForm
 
     def form_valid(self, form):
-        create_game(self.request, nickname=form.cleaned_data['player_nickname'], language_code=form.cleaned_data['language'])
+        create_game(
+            self.request,
+            nickname=form.cleaned_data['host_nickname'],
+            language_code=form.cleaned_data['language'],
+            cycles=form.cleaned_data['cycles']
+        )
         return redirect(reverse('game'))
 
     def form_invalid(self, form):
