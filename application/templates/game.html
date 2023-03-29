@@ -28,18 +28,36 @@
         <h1 id="disconnect-popup-text"></h1>
         <button id="reconnect-server" type="button" class="btn btn-secondary"> Reconnect </button>
 </div>
-<div class="container">
-    <div class="row">
-        <div class="game-controls">
-            <button id="start-game" type="button" class="btn btn-secondary invisible control-btn"> Start </button>
-            <button id="pause-game" type="button" class="btn btn-secondary invisible control-btn"> Pause </button>
-            <button id="cancel-game" type="button" class="btn btn-secondary invisible control-btn"> Cancel </button>
-        </div>
-        <h1 class="col-sm-2 text-center w-100" id="game-code"></h1>
+
+<nav class="navbar navbar-expand-md navbar-light bg-light">
+
+  <div class="container-fluid">
+      <span id="game-code" class="navbar-brand font-weight-bold"></span>
+      <div id="timer" class=" col-3 col-sm-1"></div>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+            <button id="start-game" type="button" class="btn btn-secondary invisible control-btn m-1"> Start </button>
+        </li>
+        <li class="nav-item">
+            <button id="pause-game" type="button" class="btn btn-secondary invisible control-btn m-1"> Pause </button>
+        </li>
+        <li class="nav-item">
+            <button id="cancel-game" type="button" class="btn btn-secondary invisible control-btn m-1"> Cancel </button>
+        </li>
+          <li class="nav-item">
+             <button id="restart-game" type="button" class="btn btn-secondary invisible control-btn"> Play again </button>
+          </li>
+      </ul>
     </div>
-     <div class="row justify-content-center mb-2">
-         <div id="timer" class=" col-3 col-sm-1"></div>
-     </div>
+  </div>
+</nav>
+
+
+<div class="container">
      <div id="status-screen" class="game-screen invisible row justify-content-around ">
          <div id="current-task" class="col-md-6"></div>
          <div id="players-statuses" class="col-md-6 row justify-content-around"></div>
@@ -106,7 +124,6 @@
      <div id="final-standings" class="game-screen justify-content-center row invisible">
          <div class="col-md-6">
              <a role="button" class="btn btn-secondary" href="/">Main page</a>
-             <button id="restart-game" type="button" class="btn btn-secondary invisible control-btn"> Play again </button>
              <div id="winners" class="d-flex justify-content-center align-items-end">
              </div>
              <table id="final-standing-table" class="table align-middle mb-0 bg-white">
@@ -124,6 +141,8 @@
          </div>
      </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous"></script>
 <script>
     const gameId = {{game_id}};
     const mainColor = "{{drawing_color}}";

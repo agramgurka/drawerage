@@ -20,7 +20,7 @@ function initStatusScreen(players, taskType, task) {
     const playersStatuses = document.getElementById("players-statuses");
     playersStatuses.innerHTML = "";
     const statusScreenHeader = document.createElement("h5");
-    statusScreenHeader.classList.add("text-center", "mt-5");
+    statusScreenHeader.classList.add("text-center", "mt-1");
     playersStatuses.append(statusScreenHeader);
 
     if (taskType === "writing") {
@@ -189,7 +189,7 @@ function initFinalStandingsScreen(standings) {
         score.textContent = standings[i].result;
         likes_cnt.textContent = standings[i].likes_cnt;
 
-        player.classList.add("d-flex", "align-items-center", "justify-content-center");
+        player.classList.add("d-flex", "align-items-center");
         avatar.classList.add("rounded-circle", "mx-2");
         avatar.style.width = "45px";
         avatar.style.height = "45px";
