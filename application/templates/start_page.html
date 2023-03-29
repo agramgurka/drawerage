@@ -50,6 +50,15 @@
                 {% csrf_token %}
                 <div class="row">
                     <div class="col-xl">
+                        <p>
+                            {{ form.player_nickname.errors }}
+                            <label for="{{ form.player_nickname.id_for_label }}">{{ form.player_nickname.label }}:</label>
+                            {{ form.player_nickname }}
+                        </p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xl">
                         <div>
                             <label for="{{ new_game_form.language.id_for_label }}">{{ new_game_form.language.label }}:</label>
                             {{ new_game_form.language.errors }}

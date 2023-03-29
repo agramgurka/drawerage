@@ -258,15 +258,14 @@ class Game(AsyncJsonWebsocketConsumer):
             'active_screen': GameScreens.answers
         }
 
-        players = await to_async(get_players)(self.game_id, host=True)
+        players = await to_async(get_players)(self.game_id)
         game_stage = await to_async(get_game_stage)(self.game_id)
 
         for player in players:
-            if not player.is_host:
-                status_updates['players'][player.pk] = {
-                    'avatar': None if not player.avatar else player.avatar.url,
-                    'nickname': player.nickname
-                }
+            status_updates['players'][player.pk] = {
+                'avatar': None if not player.avatar else player.avatar.url,
+                'nickname': player.nickname
+            }
 
         if game_stage == GameStage.finished:
             result_updates['active_screen'] = GameScreens.final_standings
@@ -290,10 +289,9 @@ class Game(AsyncJsonWebsocketConsumer):
             task_updates['task_type'] = TaskType.drawing
             task_updates['task'] = 'draw yourself'
             for player in players:
-                if not player.is_host:
-                    status_updates['players'][player.pk]['finished'] = bool(player.avatar)
+                status_updates['players'][player.pk]['finished'] = bool(player.avatar)
             for player in players:
-                if player.avatar or player.is_host:
+                if player.avatar:
                     await self.channel_send(
                         player.channel_name,
                         {
@@ -314,15 +312,13 @@ class Game(AsyncJsonWebsocketConsumer):
             task_updates['task_type'] = TaskType.drawing
             drawing_tasks = {}
             for player in players:
-                if not player.is_host:
-                    drawing_tasks[player.pk] = await to_async(get_drawing_task)(self.game_id, player)
+                drawing_tasks[player.pk] = await to_async(get_drawing_task)(self.game_id, player)
             finished_players = await to_async(get_finished_players)(self.game_id, game_stage)
             for player in players:
-                if not player.is_host:
-                    status_updates['players'][player.pk]['finished'] = \
-                        player.pk in finished_players
+                status_updates['players'][player.pk]['finished'] = \
+                    player.pk in finished_players
             for player in players:
-                if player.is_host or status_updates['players'][player.pk]['finished']:
+                if status_updates['players'][player.pk]['finished']:
                     await self.channel_send(
                         player.channel_name,
                         {
@@ -352,11 +348,10 @@ class Game(AsyncJsonWebsocketConsumer):
                 finished_players = await to_async(get_finished_players)(self.game_id, game_stage,
                                                                         game_round)
                 for player in players:
-                    if not player.is_host:
-                        status_updates['players'][player.pk]['finished'] = \
-                            player.pk in finished_players
+                    status_updates['players'][player.pk]['finished'] = \
+                        player.pk in finished_players
                 for player in players:
-                    if player.is_host or status_updates['players'][player.pk]['finished']:
+                    if status_updates['players'][player.pk]['finished']:
                         await self.channel_send(
                             player.channel_name,
                             {
@@ -389,11 +384,10 @@ class Game(AsyncJsonWebsocketConsumer):
                         self.variants[player.pk] = player_variants
                 status_updates['task'] = [variant for _, variant, _ in self.variants['all_variants']]
                 for player in players:
-                    if not player.is_host:
-                        status_updates['players'][player.pk]['finished'] = \
-                            player.pk in finished_players
+                    status_updates['players'][player.pk]['finished'] = \
+                        player.pk in finished_players
                 for player in players:
-                    if player.is_host or status_updates['players'][player.pk]['finished']:
+                    if status_updates['players'][player.pk]['finished']:
                         await self.channel_send(
                             player.channel_name,
                             {
@@ -421,7 +415,7 @@ class Game(AsyncJsonWebsocketConsumer):
                         {
                             'id': pk,
                             'text': variant,
-                            'likable': not player.is_host and player.pk != author_id
+                            'likable': player.pk != author_id
                         }
                         for pk, variant, author_id in answers
                     ]
