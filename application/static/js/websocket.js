@@ -6,11 +6,7 @@ const maxReconnectionCnt = 5;
 function connect() {
     ws = new WebSocket(
       (window.location.protocol === 'https:' ? 'wss://' : 'ws://') +
-      window.location.host +
-      '/ws/game/' +
-      gameId +
-      '/'
-    );
+      window.location.host + '/ws/game/');
     ws.onopen = function () {
         hidePopups();
         reconnectionCnt = 0;
@@ -57,8 +53,8 @@ function connect() {
         if (command === "resume") {
             hidePopups();
         }
-        if (command === "init_stage") {
-            initStage(res.stage);
+        if (command === "init_buttons") {
+            initButtons(res.stage);
         }
         if (command === "timer") {
             setTimer(res.initial, res.left);
@@ -68,6 +64,9 @@ function connect() {
         }
         if (command === "collect_likes") {
             collectLikes();
+        }
+        if (command === 'update_colors') {
+            updateColors(res.main_color);
         }
     };
     ws.onerror = function(err) {

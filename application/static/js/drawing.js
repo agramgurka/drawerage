@@ -27,8 +27,8 @@ pSBC.pSBCr=(d)=>{
 	}return x
 };
 
-var secondaryColor = pSBC(0.3, mainColor);
-var currentColor = mainColor;
+var secondaryColor;
+var currentColor;
 var brushSize;
 
 var canvas,ctx;
@@ -54,6 +54,9 @@ function initControls() {
 
 function initCanvas() {
 		// Get the specific canvas element from the HTML document
+		secondaryColor = pSBC(0.3, mainColor);
+        currentColor = mainColor;
+
 		canvas = document.getElementById('drawing-canvas');
 
 		canvas.focus();
@@ -205,6 +208,5 @@ function selectColor(e) {
 	if (this.id === "secondary-color") currentColor = secondaryColor;
 }
 
-
-initControls();
 initCanvas();
+initControls();

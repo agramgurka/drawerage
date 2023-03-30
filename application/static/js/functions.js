@@ -214,11 +214,6 @@ function displayScreen(screen) {
 
 }
 
-function displayGameCode(gameCode) {
-    const codeBlock = document.getElementById("game-code");
-    codeBlock.textContent = gameCode;
-}
-
 function displayButtons(enabledButtons) {
     const controlBtns = document.querySelectorAll(".control-btn");
     controlBtns.forEach((button) => {
@@ -250,7 +245,6 @@ function submitPainting() {
         credentials: "same-origin",
         headers: { "X-CSRFToken": csrftoken },
         body: JSON.stringify({
-            "game_id": gameId,
             "media_type": "painting",
             "media": painting
         })
@@ -265,7 +259,6 @@ function selectVariant() {
         credentials: "same-origin",
         headers: { "X-CSRFToken": csrftoken },
         body: JSON.stringify({
-            "game_id": gameId,
             "media_type": "answer",
             "media": answer
         })
@@ -285,7 +278,6 @@ function submitVariant(e) {
             credentials: "same-origin",
             headers: {"X-CSRFToken": csrftoken},
             body: JSON.stringify({
-                "game_id": gameId,
                 "media_type": "variant",
                 "media": variant
             })
@@ -352,7 +344,7 @@ function cancelGame() {
     displayButtons([]);
 }
 
-function initStage(stage) {
+function initButtons(stage) {
     let enabledButtons = [];
     if (stage === "pregame") enabledButtons = ["start-game", "cancel-game"];
     else if (stage !== "finished") enabledButtons = ["cancel-game", "resume-game", "pause-game"];
@@ -400,10 +392,23 @@ function collectLikes() {
             credentials: "same-origin",
             headers: {"X-CSRFToken": csrftoken},
             body: JSON.stringify({
-                "game_id": gameId,
                 "media_type": "likes",
                 "media": likes,
             })
         })
     }
+}
+
+function restartGame() {
+    ws.send(
+        JSON.stringify({
+            "command": "restart",
+        })
+    );
+}
+
+function updateColors(newMainColor) {
+    mainColor = newMainColor;
+    initCanvas();
+    initControls();
 }

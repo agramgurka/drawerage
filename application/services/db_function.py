@@ -9,7 +9,6 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.files.base import ContentFile
 from django.db.models import Count, F, Q, Sum
-from django.http import HttpRequest
 from more_itertools import distinct_combinations
 from thefuzz import fuzz
 
@@ -102,13 +101,29 @@ def is_player(game_id: int, user: User) -> bool:
     return Game.objects.filter(pk=game_id, players__user=user).exists()
 
 
-def create_game(request, *, nickname, language_code, cycles=2) -> int:
+def create_game(user, *, nickname, language_code, cycles=2, code=None) -> int:
     """ creates new game object and adds game's host to it """
     language = Language.objects.get(code=language_code)
-    game = Game.objects.create(code=generate_game_code(), cycles=cycles, language=language)
-    host = create_player(game_id=game.pk, user=request.user, nickname=nickname, is_host=True)
+    code = code if code else generate_game_code()
+    game = Game.objects.create(code=code, cycles=cycles, language=language)
+    host = create_player(game_id=game.pk, user=user, nickname=nickname, is_host=True)
     game.players.add(host)
     return game.pk
+
+
+def create_game_from_existed(game_id: int) -> int:
+    old_game = Game.objects.get(pk=game_id)
+    host = old_game.players.get(is_host=True)
+    new_game_id = create_game(
+        host.user,
+        nickname=host.nickname,
+        language_code=old_game.language.code,
+        cycles=old_game.cycles,
+        code=old_game.code
+    )
+    for player in old_game.players.filter(is_host=False):
+        join_game(player.user, old_game.code, player.nickname)
+    return new_game_id
 
 
 def get_player_color(game_id: int, user: User) -> str:
@@ -135,14 +150,16 @@ def get_game_code(game_id: int) -> str:
     return Game.objects.get(pk=game_id).code
 
 
-def join_game(request: HttpRequest, game_code: str, nickname: str) -> Optional[int]:
+def join_game(user: User, game_code: str, nickname: str) -> Optional[int]:
     """ if game exists, adds user to players; returns game id"""
 
-    game = Game.objects.get(code=game_code.upper())
+    game = Game.objects.get(code=game_code.upper(), stage=GameStage.pregame)
     if game.stage == GameStage.pregame:
-        if not request.user.player_set.filter(game=game).exists():
-            player = create_player(game_id=game.pk, user=request.user, nickname=nickname)
+        if not user.player_set.filter(game=game).exists():
+            player = create_player(game_id=game.pk, user=user, nickname=nickname)
             game.players.add(player)
+        else:
+            user.player_set.filter(game=game).update(nickname=nickname)
         return game.pk
     else:
         raise ValueError('Game has already begun')
