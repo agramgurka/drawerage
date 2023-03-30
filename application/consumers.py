@@ -22,7 +22,8 @@ from .services.db_function import (calculate_likes, calculate_results,
                                    get_players_answers, get_results, get_role,
                                    get_variants, is_game_paused, next_stage,
                                    populate_missing_variants, register_channel,
-                                   stage_completed, switch_pause_state)
+                                   stage_completed, switch_pause_state, get_active_game,
+                                   create_game_from_existed, get_player_color)
 from .services.utils import display_task_result
 
 logger = logging.getLogger(__name__)
@@ -40,7 +41,7 @@ class Game(AsyncJsonWebsocketConsumer):
         super().__init__(*args, **kwargs)
 
     async def connect(self):
-        self.game_id = self.scope["url_route"]["kwargs"]["game_id"]
+        self.game_id = await to_async(get_active_game)(self.scope['user'])
         logger.info(f'start connection game: {self.game_id}, user: {self.scope["user"]}')
         self.game_role = await to_async(get_role)(user=self.scope['user'], game_id=self.game_id)
 
@@ -93,12 +94,12 @@ class Game(AsyncJsonWebsocketConsumer):
             await self.channel_send(
                 await to_async(get_host_channel)(self.game_id),
                 {
-                    "type": "broadcast.updates"
+                    'type': 'broadcast.updates'
                 }
             )
             game_stage = await to_async(get_game_stage)(self.game_id)
             if self.game_role == GameRole.host:
-                await self.send_stage()
+                await self.init_buttons(game_stage)
                 if game_stage not in [GameStage.pregame, GameStage.finished]:
                     self.game_task = aio.create_task(self.process_game())
                     self.game_task.add_done_callback(display_task_result)
@@ -173,6 +174,24 @@ class Game(AsyncJsonWebsocketConsumer):
                 )
 
                 logger.info('game is cancelled')
+            if command == 'restart':
+                logger.info('start new game with the same party')
+                new_game_id = await to_async(create_game_from_existed)(self.game_id)
+                logger.info(f'game {new_game_id} created')
+                await self.channel_layer.group_send(
+                    self.global_group,
+                    {
+                        'type': 'update.meta',
+                        'new_game_id': new_game_id
+                    }
+                )
+                await self.channel_send(
+                    self.channel_name,
+                    {
+                        'type': 'broadcast.updates'
+                    }
+                )
+                await self.init_buttons(GameStage.pregame)
 
     async def process_game(self):
         try:
@@ -276,7 +295,7 @@ class Game(AsyncJsonWebsocketConsumer):
                 result.pop('round_increment')
                 final_results.append(result)
             result_updates['results'] = final_results
-            await self.send_stage()
+            await self.init_buttons(GameStage.finished)
             await self.channel_layer.group_send(
                 self.global_group,
                 {
@@ -464,12 +483,13 @@ class Game(AsyncJsonWebsocketConsumer):
     async def send_timer(self, event: dict):
         await self.send_json(event)
 
-    async def send_stage(self):
-        msg = {
-            'command': 'init_stage',
-            'stage': await to_async(get_game_stage)(self.game_id),
-        }
-        await self.send_json(msg)
+    async def init_buttons(self, game_stage: GameStage):
+        await self.send_json(
+            {
+                'command': 'init_buttons',
+                'stage': game_stage,
+            }
+        )
 
     async def game_paused(self, event: dict):
         await self.send_json({
@@ -538,3 +558,21 @@ class Game(AsyncJsonWebsocketConsumer):
             'variant': event['variant'],
             'is_correct': event['is_correct']
         })
+
+    async def update_meta(self, event):
+        self.game_id = event['new_game_id']
+        await self.channel_layer.group_discard(
+            self.global_group, self.channel_name
+        )
+        self.global_group = f'{self.game_id}_global'
+        await self.channel_layer.group_add(
+            self.global_group, self.channel_name
+        )
+        await to_async(register_channel)(self.game_id, self.scope['user'], self.channel_name)
+        await self.send_json(
+            {
+                'command': 'update_colors',
+                'main_color': await to_async(get_player_color)(event['new_game_id'], self.scope['user'])
+            }
+        )
+        logger.debug('meta is updated')

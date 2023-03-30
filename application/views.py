@@ -26,7 +26,6 @@ logger = logging.getLogger(__name__)
 class StartPage(FormView):
     template_name = 'start_page.html'
     form_class = JoinGameForm
-    game_id = None
 
     def get(self, request, *args, **kwargs):
         active_game = get_active_game(request.user)
@@ -43,7 +42,7 @@ class StartPage(FormView):
         game_code = form.cleaned_data['game_code']
         nickname = form.cleaned_data['player_nickname']
         try:
-            self.game_id = join_game(self.request, game_code=game_code, nickname=nickname)
+            join_game(self.request.user, game_code=game_code, nickname=nickname)
             return super().form_valid(form)
         except (ObjectDoesNotExist, MultipleObjectsReturned, ValueError):
             return super().form_invalid(form)
@@ -57,7 +56,7 @@ class CreateGame(FormView):
 
     def form_valid(self, form):
         create_game(
-            self.request,
+            self.request.user,
             nickname=form.cleaned_data['host_nickname'],
             language_code=form.cleaned_data['language'],
             cycles=form.cleaned_data['cycles']
@@ -77,7 +76,7 @@ class Game(View):
         if not is_player(game_id, request.user):
             return redirect('start_page')
         drawing_color = get_player_color(game_id, request.user)
-        context = {'game_id': game_id, 'drawing_color': drawing_color, 'game_code': get_game_code(game_id)}
+        context = {'drawing_color': drawing_color, 'game_code': get_game_code(game_id)}
         return render(request, 'game.html', context)
 
 
@@ -89,7 +88,7 @@ class MediaUpload(View):
     async def post(self, request):
         data = json.loads(request.body.decode("utf-8"))
         media_type = data.get('media_type')
-        game_id = data.get('game_id')
+        game_id = await to_async(get_active_game)(request.user)
         media = data.get('media')
         status = 'error'
         message = None
