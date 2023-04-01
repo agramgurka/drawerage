@@ -388,10 +388,9 @@ def next_stage(game_id: int):
 def _get_filename(player: Player, game_round: Optional[Round] = None) -> str:
     chunks = [f'{player.game_id // 100:03}', str(player.game_id)]
     if game_round is not None:
-        chunks.append(str(game_round.order_number))
+        chunks.append(f'{game_round.order_number}_{player.pk}_{player.nickname}.png')
     else:
-        chunks.append('avatar')
-    chunks.append(f'{player.pk}_{player.nickname}.png')
+        chunks.extend(['avatar', f'{player.pk}_{player.nickname}.png'])
 
     return '/'.join(chunks)
 
