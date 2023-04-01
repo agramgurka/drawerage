@@ -9,6 +9,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.files.base import ContentFile
 from django.db.models import Count, F, Q, Sum
+from django.db.transaction import atomic
 from more_itertools import distinct_combinations
 from thefuzz import fuzz
 
@@ -474,6 +475,7 @@ def select_variant(game_id: int, user: User, answer) -> None:
         raise ValidationError(f'{player.nickname} has already selected variant', code='duplicate')
 
 
+@atomic
 def calculate_results(game_id: int) -> None:
     """ calculates player's points and increment after round """
 
@@ -599,7 +601,7 @@ def get_host_channel(game_id: int) -> str:
 
 def apply_likes(game_id: int, user: User, likes: list[int]):
     player = user.player_set.get(game_id=game_id)
-    for variant in Variant.objects.select_for_update().filter(
+    for variant in Variant.objects.filter(
         ~Q(author=player), ~Q(liked_by=player), pk__in=likes,
     ):
         variant.liked_by.add(player)
@@ -608,4 +610,8 @@ def apply_likes(game_id: int, user: User, likes: list[int]):
 
 
 def calculate_likes(player: Player) -> int:
-    return Variant.objects.filter(author=player).aggregate(Sum('likes_cnt'))['likes_cnt__sum']
+    return Variant.objects.filter(author=player).annotate(
+        cnt=Count('liked_by'),
+    ).aggregate(
+        likes_sum=Sum('cnt'),
+    )['likes_sum']
