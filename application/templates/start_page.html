@@ -85,9 +85,11 @@
 <script>
     window.addEventListener('load', () => {
       const nicknameEl = document.querySelector('#id_player_nickname');
+      const hostNicknameEl = document.querySelector('#id_host_nickname');
       const lastName = window.localStorage.getItem('lastName');
       if (lastName) {
         nicknameEl.value = lastName;
+        hostNicknameEl.value = lastName;
       }
       const languageEl = document.querySelector('#id_language');
       const language = window.localStorage.getItem('language');
