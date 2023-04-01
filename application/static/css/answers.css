@@ -1,9 +1,47 @@
 .answer-card {
-  background-color: transparent;
-  width: 100%;
-  height: 270px;
-  perspective: 1000px;
-  font-family: sans-serif;
+    width: 100%;
+    position: relative;
+    min-height: 25em;
+    perspective: 150em;
+    font-family: sans-serif;
+    text-align: center;
+}
+
+
+.answer-card-front,
+.answer-card-back {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    min-height: 18em;
+    backface-visibility: hidden;
+    transition: transform 0.8s ease;
+
+    box-shadow: 0 8px 14px 0 rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    -webkit-backface-visibility: hidden;
+    border-radius: 1rem;
+}
+
+.answer-card-front {
+    background-color: #FFF;
+    justify-content: start;
+}
+
+.answer-card-back {
+    color: #FFF;
+    transform: rotateY(180deg);
+}
+
+.answer-card-inner.flipped .answer-card-back {
+    transform: rotateY(0);
+}
+
+.answer-card-inner.flipped .answer-card-front {
+    transform: rotateY(-180deg);
 }
 
 .answer-card-title {
@@ -11,46 +49,6 @@
   font-weight: 900;
   text-align: center;
   margin: 15px;
-}
-
-.answer-card-inner {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  text-align: center;
-  transition: transform 0.8s;
-  transform-style: preserve-3d;
-}
-
-.answer-card-inner.flipped{
-  transform: rotateY(180deg);
-  transition: transform 0.8s;
-  transform-style: preserve-3d;
-}
-
-.answer-card-front, .answer-card-back {
-  box-shadow: 0 8px 14px 0 rgba(0,0,0,0.2);
-  position: absolute;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  border-radius: 1rem;
-}
-
-.answer-card-front {
-  background: white;
-  border: 1px solid black;
-  color: black;
-  justify-content: start;
-}
-
-.answer-card-back {
-  color: white;
-  transform: rotateY(180deg);
 }
 
 .answer-card-back-incorrect {
