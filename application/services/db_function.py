@@ -386,7 +386,7 @@ def next_stage(game_id: int):
 
 
 def _get_filename(player: Player, game_round: Optional[Round] = None) -> str:
-    chunks = [f'{player.game_id // 100:03}', str(player.game_id)]
+    chunks = [f'{player.game_id // 100:03}', f'{player.game_id}_{player.game.code}']
     if game_round is not None:
         chunks.append(f'{game_round.order_number}_{player.pk}_{player.nickname}.png')
     else:
@@ -398,7 +398,7 @@ def _get_filename(player: Player, game_round: Optional[Round] = None) -> str:
 def upload_avatar(game_id: int, user: User, media: str) -> None:
     """ uploads player's avatar """
 
-    player = user.player_set.get(game_id=game_id)
+    player = user.player_set.select_related('game').get(game_id=game_id)
     if not player.avatar:
         media = media.replace('data:image/png;base64,', '')
         avatar = ContentFile(base64.b64decode(media), _get_filename(player))
@@ -412,7 +412,7 @@ def upload_avatar(game_id: int, user: User, media: str) -> None:
 def upload_painting(game_id: int, user: User, media) -> None:
     """ uploads player's painting """
 
-    player = user.player_set.get(game_id=game_id)
+    player = user.player_set.select_related('game').get(game_id=game_id)
     game_round = Round.objects.filter(game=game_id, painter=player, stage=RoundStage.not_started).first()
     if not game_round.painting:
         media = media.replace('data:image/png;base64,', '')
