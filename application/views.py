@@ -76,7 +76,7 @@ class Game(View):
         if not is_player(game_id, request.user):
             return redirect('start_page')
         drawing_color = get_player_color(game_id, request.user)
-        context = {'drawing_color': drawing_color, 'game_code': get_game_code(game_id)}
+        context = {'drawing_color': drawing_color, 'game_code': get_game_code(game_id), 'game_id': game_id}
         return render(request, 'game.html', context)
 
 

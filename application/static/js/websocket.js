@@ -6,7 +6,7 @@ const maxReconnectionCnt = 5;
 function connect() {
     ws = new WebSocket(
       (window.location.protocol === 'https:' ? 'wss://' : 'ws://') +
-      window.location.host + '/ws/game/');
+      window.location.host + '/ws/game/' + gameId);
     ws.onopen = function () {
         hidePopups();
         reconnectionCnt = 0;
@@ -65,25 +65,29 @@ function connect() {
         if (command === "collect_likes") {
             collectLikes();
         }
-        if (command === 'update_colors') {
+        if (command === 'update_meta') {
             updateColors(res.main_color);
+            updateId(res.new_game_id);
         }
     };
     ws.onerror = function(err) {
-        ws.close();
+        console.log("Unable to connect");
     };
-    ws.onclose = function () {
-        reconnectionCnt++;
-        if (reconnectionCnt <= maxReconnectionCnt)
-            setTimeout(function () {
-                displayPopup("disconnect-popup", "Reconnecting to server");
-                addLoadingSpinner("reconnect-server");
-                connect();
-            }, reconnectionDelay);
-        else {
-            displayPopup("disconnect-popup", "Server is unavailable");
-            removeLoadingSpinner("reconnect-server");
+    ws.onclose = function (event) {
+        if (event.code == 1006) {
+            reconnectionCnt++;
+            if (reconnectionCnt <= maxReconnectionCnt)
+                setTimeout(function () {
+                    displayPopup("disconnect-popup", "Reconnecting to server");
+                    addLoadingSpinner("reconnect-server");
+                    connect();
+                }, reconnectionDelay);
+            else {
+                displayPopup("disconnect-popup", "Server is unavailable");
+                removeLoadingSpinner("reconnect-server");
+            }
         }
+        else if (event.code == 4003) console.log("Connection is forbidden");
     };
 }
 

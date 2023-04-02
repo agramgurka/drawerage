@@ -412,3 +412,9 @@ function updateColors(newMainColor) {
     initCanvas();
     initControls();
 }
+
+function updateId(newId) {
+    gameId = newId;
+    ws.close();
+    connect();
+}
