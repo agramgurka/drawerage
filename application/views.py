@@ -16,8 +16,8 @@ from .services.basics import GameStage, MediaType
 from .services.db_function import (apply_likes, apply_variant, create_game,
                                    get_active_game, get_game_code,
                                    get_game_stage, get_host_channel,
-                                   get_player_color, is_player,
-                                   join_game, select_variant, upload_avatar,
+                                   get_player_color, is_player, join_game,
+                                   select_variant, upload_avatar,
                                    upload_painting)
 
 logger = logging.getLogger(__name__)
