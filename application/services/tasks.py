@@ -1,7 +1,5 @@
 import random
 import re
-import sys
-from typing import Any
 
 import requests
 
