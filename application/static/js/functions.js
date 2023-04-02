@@ -418,3 +418,7 @@ function updateId(newId) {
     ws.close();
     connect();
 }
+
+function updateGameCode(newCode) {
+    document.getElementById("game-code").textContent = newCode;
+}

@@ -18,11 +18,11 @@ from .services.db_function import (calculate_likes, calculate_results,
                                    create_rounds, deregister_channel,
                                    finish_game, get_active_game,
                                    get_current_round, get_drawing_task,
-                                   get_finished_players, get_game_stage,
-                                   get_host_channel, get_player_color,
-                                   get_players, get_players_answers,
-                                   get_results, get_role, get_variants,
-                                   is_game_paused, next_stage,
+                                   get_finished_players, get_game_code,
+                                   get_game_stage, get_host_channel,
+                                   get_player_color, get_players,
+                                   get_players_answers, get_results, get_role,
+                                   get_variants, is_game_paused, next_stage,
                                    populate_missing_variants, register_channel,
                                    stage_completed, switch_pause_state)
 from .services.utils import display_task_result
@@ -575,6 +575,7 @@ class Game(AsyncJsonWebsocketConsumer):
                 'command': 'update_meta',
                 'main_color': await to_async(get_player_color)(event['new_game_id'], self.scope['user']),
                 'new_game_id': self.game_id,
+                'game_code': await to_async(get_game_code)(self.game_id),
             }
         )
         logger.debug('meta is updated')
