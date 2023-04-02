@@ -41,10 +41,10 @@ class Game(AsyncJsonWebsocketConsumer):
         super().__init__(*args, **kwargs)
 
     async def connect(self):
-        self.game_id = await to_async(get_active_game)(self.scope['user'])
+        self.game_id = self.scope['url_route']['kwargs']['game_id']
         logger.info(f'start connection game: {self.game_id}, user: {self.scope["user"]}')
         self.game_role = await to_async(get_role)(user=self.scope['user'], game_id=self.game_id)
-
+        await self.accept()
         if self.game_role:
             await to_async(register_channel)(self.game_id, self.scope['user'], self.channel_name)
             self.global_group = f'{self.game_id}_global'
@@ -52,10 +52,9 @@ class Game(AsyncJsonWebsocketConsumer):
                 self.global_group, self.channel_name
             )
             self.paused = await to_async(is_game_paused)(self.game_id)
-            await self.accept()
             logger.info(f'connection accepted, role: {self.game_role}')
         else:
-            await self.close()
+            await self.close(code=4003)
             logger.info('connection declined')
 
     async def channel_send(self, channel_name, data):
@@ -78,10 +77,11 @@ class Game(AsyncJsonWebsocketConsumer):
                         'text': 'Host is disconnected'
                     }
                 )
-        await self.channel_layer.group_discard(
-            self.global_group, self.channel_name
-        )
-        await to_async(deregister_channel)(self.game_id, self.scope['user'])
+        if self.global_group:
+            await self.channel_layer.group_discard(
+                self.global_group, self.channel_name
+            )
+            await to_async(deregister_channel)(self.game_id, self.scope['user'])
         logger.info('disconnected')
 
     async def receive_json(self, content, **kwargs):
@@ -571,8 +571,9 @@ class Game(AsyncJsonWebsocketConsumer):
         await to_async(register_channel)(self.game_id, self.scope['user'], self.channel_name)
         await self.send_json(
             {
-                'command': 'update_colors',
-                'main_color': await to_async(get_player_color)(event['new_game_id'], self.scope['user'])
+                'command': 'update_meta',
+                'main_color': await to_async(get_player_color)(event['new_game_id'], self.scope['user']),
+                'new_game_id': self.game_id,
             }
         )
         logger.debug('meta is updated')
