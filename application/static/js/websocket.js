@@ -68,6 +68,7 @@ function connect() {
         if (command === 'update_meta') {
             updateColors(res.main_color);
             updateId(res.new_game_id);
+            updateGameCode(res.game_code);
         }
     };
     ws.onerror = function(err) {

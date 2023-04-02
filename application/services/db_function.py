@@ -10,6 +10,7 @@ from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.files.base import ContentFile
 from django.db.models import Count, F, Q, Sum
 from django.db.transaction import atomic
+from django.db.utils import IntegrityError
 from more_itertools import distinct_combinations
 from thefuzz import fuzz
 
@@ -102,29 +103,38 @@ def is_player(game_id: int, user: User) -> bool:
     return Game.objects.filter(pk=game_id, players__user=user).exists()
 
 
-def create_game(user, *, nickname, language_code, cycles=2, code=None) -> int:
+def create_game(user, *, nickname, language_code, cycles=2, code=None) -> Game:
     """ creates new game object and adds game's host to it """
     language = Language.objects.get(code=language_code)
     code = code if code else generate_game_code()
     game = Game.objects.create(code=code, cycles=cycles, language=language)
     host = create_player(game_id=game.pk, user=user, nickname=nickname, is_host=True)
     game.players.add(host)
-    return game.pk
+    return game
 
 
 def create_game_from_existed(game_id: int) -> int:
     old_game = Game.objects.get(pk=game_id)
     host = old_game.players.get(is_host=True)
-    new_game_id = create_game(
-        host.user,
-        nickname=host.nickname,
-        language_code=old_game.language.code,
-        cycles=old_game.cycles,
-        code=old_game.code
-    )
+    try:
+        new_game = create_game(
+            host.user,
+            nickname=host.nickname,
+            language_code=old_game.language.code,
+            cycles=old_game.cycles,
+            code=old_game.code,
+        )
+    except IntegrityError:
+        new_game = create_game(
+            host.user,
+            nickname=host.nickname,
+            language_code=old_game.language.code,
+            cycles=old_game.cycles,
+            code=generate_game_code(),
+        )
     for player in old_game.players.filter(is_host=False):
-        join_game(player.user, old_game.code, player.nickname)
-    return new_game_id
+        join_game(player.user, new_game.code, player.nickname)
+    return new_game.pk
 
 
 def get_player_color(game_id: int, user: User) -> str:
