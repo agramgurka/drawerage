@@ -605,8 +605,6 @@ def apply_likes(game_id: int, user: User, likes: list[int]):
         ~Q(author=player), ~Q(liked_by=player), pk__in=likes,
     ):
         variant.liked_by.add(player)
-        variant.likes_cnt += 1
-        variant.save()
 
 
 def calculate_likes(player: Player) -> int:
