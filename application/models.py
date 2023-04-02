@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models import Q
 
 from .services.basics import GameStage, RoundStage
 
@@ -38,6 +39,15 @@ class Game(models.Model):
 
     def __str__(self):
         return f'Game {self.code}, lang: {self.language.code}'
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['code'],
+                condition=~Q(stage=GameStage.finished),
+                name='unique_active_game_code'
+            )
+        ]
 
 
 class Player(models.Model):
