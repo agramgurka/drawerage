@@ -27,12 +27,24 @@ class BaseTaskProvider:
         if self.LANGUAGES and lang.code not in self.LANGUAGES:
             raise ValueError(f'{lang} is not supported in {self.__class__}')
         self.language = lang
+        self.setup()
+        self.check_self()
+
+    def setup(self):
+        pass
+
+    def check_self(self):
+        pass
 
     def get_task(self, restrictions=()) -> tuple[Task, list[Restriction]]:
         raise NotImplementedError()
 
 
 class PredefinedTaskProvider(BaseTaskProvider):
+    def check_self(self):
+        if not Task.objects.filter(language=self.language, auto_created=False).exists():
+            raise ValueError('No tasks exist in DB')
+
     def get_task(self, restrictions=None) -> tuple[Task, list[Restriction]]:
         if not restrictions:
             restrictions = []
@@ -58,11 +70,15 @@ class PredefinedTaskProvider(BaseTaskProvider):
 class ExternalTextTaskProvider(BaseTaskProvider):
     SOURCE = None
 
-    choices = []
+    choices = ()
 
     def get_source(self):
         assert self.SOURCE, 'SOURCE for ExternalTextTaskProvider must be defined'
         return self.SOURCE
+
+    def check_self(self):
+        if not self.choices:
+            raise ValueError('Provider doesn\'t contain task variants')
 
     def get_task(self, restrictions=None) -> tuple[Task, list[Restriction]]:
         if not restrictions:
@@ -137,8 +153,7 @@ class RuslangTaskProvider(ExternalTextTaskProvider):
     URL = 'http://dict.ruslang.ru/magn.php?act=search'
     SOURCE = 'ruslang_phrases'
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def setup(self):
         response = requests.get(self.URL)
         self.choices = re.findall(r'<span.*?>(.*?)</span>', response.text)
 
@@ -148,8 +163,7 @@ class RuslangTaskSingleNounProvider(ExternalTextTaskProvider):
     URL = 'http://dict.ruslang.ru/freq.php?act=show&dic=freq_s'
     SOURCE = 'ruslang_nouns'
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def setup(self):
         response = requests.get(self.URL)
         self.choices = re.findall(
             r'<tr><td.*?<td>(.*?)</td>.*?</tr>',
