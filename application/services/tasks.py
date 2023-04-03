@@ -169,3 +169,24 @@ class RuslangTaskSingleNounProvider(ExternalTextTaskProvider):
             r'<tr><td.*?<td>(.*?)</td>.*?</tr>',
             response.text
         )
+
+
+class AcademicoupWordTaskProvider(ExternalTextTaskProvider):
+    LANGUAGES = ('en',)
+    URL = 'https://academic.oup.com/view-large/1188011'
+    SOURCE = 'academic_oup'
+
+    def setup(self):
+        response = requests.get(
+            self.URL,
+            headers={
+                'User-agent': (
+                    'Mozilla/5.0 (Linux; Android 10; SM-G996U Build/QP1A.190711.020; wv) '
+                    'AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Mobile Safari/537.36'
+                ),
+            },
+        )
+        self.choices = list(set(re.findall(
+            r'<tr><td>\d+\.\s*(.*?)\..</td></tr>',
+            response.text
+        )))

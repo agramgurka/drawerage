@@ -21,7 +21,7 @@ from .basics import (CODE_CHARS, DRAWING_COLORS, GAME_CODE_LEN,
                      POINTS_FOR_RECOGNITION, USERNAME_LEN, GameRole, GameStage,
                      RoundStage)
 from .tasks import (BaseTaskProvider, PredefinedTaskProvider, Restriction,
-                    RuslangTaskProvider, RuslangTaskSingleNounProvider)
+                    RuslangTaskProvider, RuslangTaskSingleNounProvider, AcademicoupWordTaskProvider)
 
 logger = logging.getLogger(__name__)
 
@@ -200,6 +200,14 @@ def get_ruslang_nouns_task_provider(lang) -> RuslangTaskSingleNounProvider | Non
         return None
 
 
+@lru_cache()
+def get_academicoup_word_task_provider(lang) -> AcademicoupWordTaskProvider | None:
+    try:
+        return AcademicoupWordTaskProvider(lang)
+    except ValueError:
+        return None
+
+
 def available_task_providers(lang: Language) -> list[tuple[BaseTaskProvider, int]]:
     """
     Returns provider and weight how ofter it should appears
@@ -211,6 +219,8 @@ def available_task_providers(lang: Language) -> list[tuple[BaseTaskProvider, int
         (get_ruslang_task_provider(lang), 2),
         # random noun from ruslang
         (get_ruslang_nouns_task_provider(lang), 2),
+        # random noun from academic.oup.com
+        (get_academicoup_word_task_provider(lang), 2),
     ] if x[0] is not None]
 
 
