@@ -83,16 +83,18 @@
     </div>
 </div>
 <script>
+    const NICKNAME_KEY = 'nickname';
+    const LANGUAGE_KEY = 'language';
     window.addEventListener('load', () => {
       const nicknameEl = document.querySelector('#id_player_nickname');
       const hostNicknameEl = document.querySelector('#id_host_nickname');
-      const lastName = window.localStorage.getItem('lastName');
-      if (lastName) {
-        nicknameEl.value = lastName;
-        hostNicknameEl.value = lastName;
+      const lastNickname = window.localStorage.getItem(NICKNAME_KEY);
+      if (lastNickname) {
+        nicknameEl.value = lastNickname;
+        hostNicknameEl.value = lastNickname;
       }
       const languageEl = document.querySelector('#id_language');
-      const language = window.localStorage.getItem('language');
+      const language = window.localStorage.getItem(LANGUAGE_KEY);
       if (language) {
         languageEl.value = language;
       } else {
@@ -102,14 +104,16 @@
             languageEl.value = browserLang;
         }
       }
-      nicknameEl.addEventListener('blur', (e) => {
-        if (e.target.value) {
-          window.localStorage.setItem('lastName', e.target.value);
-        }
+      [nicknameEl, hostNicknameEl].forEach((el) => {
+        el.addEventListener('blur', (e) => {
+          if (e.target.value) {
+            window.localStorage.setItem(NICKNAME_KEY, e.target.value);
+          }
+        });
       });
       languageEl.addEventListener('change', (e) => {
         if (e.target.value) {
-          window.localStorage.setItem('language', e.target.value);
+          window.localStorage.setItem(LANGUAGE_KEY, e.target.value);
         }
       });
     });
