@@ -76,8 +76,8 @@ function initStatusScreen(players, taskType, task) {
         statusBlock.append(playerAvatar, status, playerName);
         playersStatuses.append(statusBlock);
     }
-    return document.getElementById("status-screen");;
-};
+    return document.getElementById("status-screen");
+}
 
 function initTaskScreen(taskType, task){
     let screen = document.getElementById("task-screen");
@@ -377,8 +377,8 @@ function removeLoadingSpinner(elementId) {
 }
 
 function collectLikes() {
-    likeCheckboxes = document.querySelectorAll(".like");
-    likes = [];
+    const likeCheckboxes = document.querySelectorAll(".like");
+    const likes = [];
     likeCheckboxes.forEach(
         (checkbox) => {
             if (checkbox.checked)
