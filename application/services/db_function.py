@@ -3,7 +3,7 @@ import logging
 import random
 import re
 from functools import lru_cache
-from typing import Optional
+from typing import Iterable, Optional
 
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
@@ -20,8 +20,9 @@ from .basics import (CODE_CHARS, DRAWING_COLORS, GAME_CODE_LEN,
                      POINTS_FOR_CORRECT_ANSWER, POINTS_FOR_CORRECT_RECOGNITION,
                      POINTS_FOR_RECOGNITION, USERNAME_LEN, GameRole, GameStage,
                      RoundStage)
-from .tasks import (BaseTaskProvider, PredefinedTaskProvider, Restriction,
-                    RuslangTaskProvider, RuslangTaskSingleNounProvider, AcademicoupWordTaskProvider)
+from .tasks import (AcademicoupWordTaskProvider, BaseTaskProvider,
+                    PredefinedTaskProvider, Restriction, RuslangTaskProvider,
+                    RuslangTaskSingleNounProvider)
 
 logger = logging.getLogger(__name__)
 
@@ -344,12 +345,10 @@ def get_variants(game_round: Round) -> list[tuple[str, int | None]]:
     ).order_by('id').values_list('id', 'text', 'author_id'))
 
 
-def get_results(game: Game):
+def get_results(game: Game) -> Iterable[Result]:
     """ returns game's results """
 
-    return list(Result.objects.filter(game=game).values(
-        'player__pk', 'player__nickname', 'player__avatar', 'player__drawing_color', 'result', 'round_increment'
-    ))
+    return Result.objects.filter(game=game).select_related('player')
 
 
 def next_stage(game_id: int):

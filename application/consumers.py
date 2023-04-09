@@ -291,10 +291,10 @@ class Game(AsyncJsonWebsocketConsumer):
             result_updates['active_screen'] = GameScreens.final_standings
             final_results = []
             for result in await to_async(get_results)(self.game_id):
-                result['likes_cnt'] = await to_async(calculate_likes)(result['player__pk'])
-                result.pop('player__pk')
-                result.pop('round_increment')
-                final_results.append(result)
+                result_dict = result.as_dict()
+                result_dict['likes_cnt'] = await to_async(calculate_likes)(result.player)
+                result_dict.pop('round_increment')
+                final_results.append(result_dict)
             result_updates['results'] = final_results
             await self.init_buttons(GameStage.finished)
             await self.channel_layer.group_send(
@@ -449,9 +449,7 @@ class Game(AsyncJsonWebsocketConsumer):
                     )
             elif game_round.stage == RoundStage.results:
                 results = await to_async(get_results)(self.game_id)
-                for result in results:
-                    result.pop('player__pk')
-                result_updates['results'] = results
+                result_updates['results'] = [result.as_dict() for result in results]
                 await self.channel_layer.group_send(
                     self.global_group,
                     {

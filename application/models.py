@@ -106,6 +106,15 @@ class Result(models.Model):
     class Meta:
         ordering = ['game', '-result']
 
+    def as_dict(self):
+        return {
+            'player__avatar': self.player.avatar.url,
+            'player__nickname': self.player.nickname,
+            'player__drawing_color': self.player.drawing_color,
+            'result': self.result,
+            'round_increment': self.round_increment,
+        }
+
 
 class Task(models.Model):
     language = models.ForeignKey(Language, related_name='tasks', on_delete=models.CASCADE)

@@ -145,14 +145,14 @@ function initFinalStandingsScreen(standings) {
             placeCard.classList.add("player-card");
             let placeBadge = document.createElement("span");
             placeBadge.classList.add("place-badge");
-            placeCardBody = document.createElement("div");
+            const placeCardBody = document.createElement("div");
             placeCardBody.classList.add("player-card-body");
             let placeCardText = document.createElement("p");
             placeCardText.classList.add("player-card-text");
             placeCardText.textContent = standings[i].result;
             let placeCardAvatar = document.createElement("img");
             placeCardAvatar.classList.add("player-card-img");
-            placeCardAvatar.src = "/media/" + standings[i].player__avatar;
+            placeCardAvatar.src = standings[i].player__avatar;
             placeCardBody.append(placeCardText);
 
             if (playerPlace === 1) {
