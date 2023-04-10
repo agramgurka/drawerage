@@ -175,16 +175,16 @@ function initFinalStandingsScreen(standings) {
             winners.append(placeCard);
         }
 
-        let newRow = document.createElement("tr");
-        let place = document.createElement("td");
-        let player = document.createElement("td");
-        let avatar = document.createElement("img");
-        let nickname = document.createElement("p");
-        let score = document.createElement("td");
-        let likes_cnt = document.createElement("td");
+        const newRow = document.createElement("tr");
+        const place = document.createElement("td");
+        const player = document.createElement("td");
+        const avatar = document.createElement("img");
+        const nickname = document.createElement("p");
+        const score = document.createElement("td");
+        const likes_cnt = document.createElement("td");
 
         place.textContent = playerPlace;
-        avatar.src = '/media/' + standings[i].player__avatar;
+        avatar.src = standings[i].player__avatar;
         nickname.textContent = standings[i].player__nickname;
         score.textContent = standings[i].result;
         likes_cnt.textContent = standings[i].likes_cnt;
